@@ -1,0 +1,27 @@
+{
+  "assignment": "Rechnernetze und Netzwerkprogrammierung, Übungsblatt 01",
+  "semester": "WS 2026/27",
+  "course_lv": "621.801/621.802",
+  "source_hash": "sha256:8bf8251943634b277bc03a5c0a43f8d1c117b4ac55b3c0758bad149d496e25eb",
+  "materials": [
+    {
+      "course_lv": "621.801/621.802",
+      "path_or_url": "Moodle-Download WS2026-27/621.800-802/RN_WS26_Uebungsblatt-01_Python.pdf",
+      "sha256": "8bf8251943634b277bc03a5c0a43f8d1c117b4ac55b3c0758bad149d496e25eb",
+      "page_or_section": "Pages 1–4; exercises 1.1–1.7, protocol bit diagram and requirements"
+    },
+    {
+      "course_lv": "621.801/621.802",
+      "path_or_url": "Moodle-Download WS2026-27/621.800-802/RN-Aufnahme-KH.pdf",
+      "sha256": "046480fd15216560eff3d2847d1dcd656a704e43af417158afde473221eb209c",
+      "page_or_section": "Pages 5, 7 and 18; Python/network-programming topics, environment version and AI-use rule"
+    },
+    {
+      "course_lv": "621.800",
+      "path_or_url": "Moodle-Download WS2026-27/621.800-802/rn-chapter-2.pdf",
+      "sha256": "f13b52d942d765b83b85d395473f388ba6bbfbd25248e8c742cdf9dd5c111273",
+      "page_or_section": "Pages 59–64; Python TCP/UDP examples and str/bytes encode/decode flow"
+    }
+  ],
+  "policy": "The Aufnahme slides state that generative AI is explicitly permitted, requires tool/version/date and prompt disclosure in source comments, and that students remain responsible for understanding and working code (page 18)."
+}
