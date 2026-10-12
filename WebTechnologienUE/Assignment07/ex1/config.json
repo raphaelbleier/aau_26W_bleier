@@ -1,0 +1,12 @@
+{
+    "database": {
+        "host": "/var/run/postgresql",
+        "user": "bleier",
+        "password": "",
+        "db": "webtech_jwt"
+    },
+    "auth": {
+        "jwt_key": "secret",
+        "expiration": "1h"
+    }
+}

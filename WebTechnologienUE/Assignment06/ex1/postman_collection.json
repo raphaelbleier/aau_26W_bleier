@@ -1,0 +1,43 @@
+{
+  "info": {
+    "name": "A6 Ex1 - Getting Started",
+    "description": "Raphael Bleier - Web-Technologien Assignment 6. Postman speichert das Session-Cookie automatisch, deshalb bei ex4 die Requests der Reihe nach ausfuehren.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Default route",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": []
+        }
+      }
+    },
+    {
+      "name": "Route parameter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/mytext",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "mytext"
+          ]
+        }
+      }
+    }
+  ]
+}

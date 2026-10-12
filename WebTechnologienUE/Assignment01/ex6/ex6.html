@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rental</title>
+    <style>
+        input:user-invalid {
+            color: red;
+        }
+
+        textarea:invalid {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Your Rental</h1>
+
+    <!-- enctype text/plain damit die mail lesbar ist, name attribute sind die keys -->
+    <form action="mailto:yourmail@edu.aau.at?subject=Rental Request" method="post" enctype="text/plain">
+
+        <fieldset>
+            <legend>Contact Data</legend>
+
+            <label for="title">Title:</label>
+            <select id="title" name="title" required>
+                <option value="">-- please choose --</option>
+                <option value="Mr">Mr</option>
+                <option value="Ms">Ms</option>
+                <option value="Mx">Mx</option>
+                <option value="Dr">Dr</option>
+            </select>
+            <br>
+
+            <label for="firstname">First name:</label>
+            <input type="text" id="firstname" name="firstname" placeholder="Max" required>
+            <br>
+
+            <label for="lastname">Last name:</label>
+            <input type="text" id="lastname" name="lastname" placeholder="Mustermann" required>
+            <br>
+
+            <label for="email">E-Mail:</label>
+            <input type="email" id="email" name="email" placeholder="max.mustermann@edu.aau.at" required>
+            <br>
+
+            <!-- nur ziffern, leerzeichen und optional + am anfang -->
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" placeholder="+43 664 1234567" pattern="\+?[0-9 ]{6,20}" required>
+        </fieldset>
+
+        <fieldset>
+            <legend>Rental Details</legend>
+
+            <label for="pickupdate">Pickup date:</label>
+            <input type="date" id="pickupdate" name="pickupdate" required>
+            <br>
+
+            <label for="returndate">Return date:</label>
+            <input type="date" id="returndate" name="returndate" required>
+            <br>
+
+            <label for="location">Pickup location:</label>
+            <input type="text" id="location" name="location" placeholder="Klagenfurt Hauptbahnhof" required>
+            <br>
+
+            <label for="passengers">Number of passengers:</label>
+            <input type="number" id="passengers" name="passengers" min="1" max="9" placeholder="2" required>
+        </fieldset>
+
+        <fieldset>
+            <legend>Vehicle Preferences</legend>
+
+            <label for="color">Vehicle color:</label>
+            <input type="color" id="color" name="color" value="#000000" required>
+            <br>
+
+            <!-- radio buttons haben alle den gleichen name, required reicht bei einem -->
+            <p>Vehicle type:</p>
+            <input type="radio" id="sports" name="vehicletype" value="Sports car" required>
+            <label for="sports">Sports car</label>
+            <input type="radio" id="combi" name="vehicletype" value="Combi">
+            <label for="combi">Combi</label>
+            <input type="radio" id="truck" name="vehicletype" value="Truck">
+            <label for="truck">Truck</label>
+            <input type="radio" id="van" name="vehicletype" value="Van">
+            <label for="van">Van</label>
+            <input type="radio" id="suv" name="vehicletype" value="SUV">
+            <label for="suv">SUV</label>
+            <input type="radio" id="luxury" name="vehicletype" value="Luxury">
+            <label for="luxury">Luxury</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Final Comments</legend>
+
+            <label for="comments">Comments (max. 512 characters):</label>
+            <br>
+            <textarea id="comments" name="comments" rows="6" cols="50" maxlength="512" placeholder="e.g. child seat needed"></textarea>
+        </fieldset>
+
+        <button type="submit">Submit Rental Request</button>
+        <button type="reset">Reset</button>
+    </form>
+
+
+</body>
+
+</html>

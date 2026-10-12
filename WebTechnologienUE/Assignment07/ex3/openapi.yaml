@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Book Library REST Service
+  description: >
+    Assignment 7 Exercise 3 - Raphael Bleier.
+    Nur Spezifikation, keine Implementierung. Ressourcen sind die Buecher (/books)
+    und die Ausleihe eines Buches als Unterressource (/books/{isbn}/rental).
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /books:
+    get:
+      summary: Liste aller Buecher, optional gefiltert (getAllBooks, searchByTitle, searchByAuthor, searchByAttribute)
+      description: >
+        Ohne Parameter kommen alle Buecher (getAllBooks).
+        title = Teilstring im Titel (searchByTitle).
+        author = einer der Autoren ist genau gleich (searchByAuthor).
+        searchIn + q = Teilstring q im Attribut searchIn (searchByAttribute).
+        Parameter koennen kombiniert werden, dann muessen alle zutreffen.
+      parameters:
+        - name: title
+          in: query
+          schema: { type: string }
+          example: Android
+        - name: author
+          in: query
+          schema: { type: string }
+          example: W. Frank Ableson
+        - name: searchIn
+          in: query
+          schema:
+            type: string
+            enum: [title, shortDescription, longDescription, author, category]
+        - name: q
+          in: query
+          description: Suchbegriff fuer searchIn, Pflicht wenn searchIn gesetzt ist
+          schema: { type: string }
+      responses:
+        '200':
+          description: Liste der passenden Buecher, leer wenn nichts passt
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Book' }
+        '400':
+          description: searchIn ohne q oder unbekanntes Attribut
+    post:
+      summary: Neues Buch anlegen (createBook)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Book' }
+      responses:
+        '201':
+          description: Angelegt, Location Header zeigt auf /books/{isbn}
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        '400':
+          description: Pflichtfelder fehlen oder ungueltig
+        '409':
+          description: Buch mit dieser ISBN gibt es schon
+
+  /books/{isbn}:
+    parameters:
+      - $ref: '#/components/parameters/isbn'
+    get:
+      summary: Ein Buch (getBook)
+      responses:
+        '200':
+          description: Das Buch
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        '404':
+          description: ISBN nicht gefunden
+    put:
+      summary: Buch aendern (updateBook), ersetzt alle Attribute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Book' }
+      responses:
+        '200':
+          description: Geaendertes Buch
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        '400':
+          description: Ungueltige Daten oder ISBN im Body passt nicht zur URL
+        '404':
+          description: ISBN nicht gefunden
+    delete:
+      summary: Buch loeschen (deleteBook)
+      responses:
+        '204':
+          description: Geloescht
+        '404':
+          description: ISBN nicht gefunden
+        '409':
+          description: Buch ist gerade ausgeliehen und kann nicht geloescht werden
+
+  /books/{isbn}/rental:
+    parameters:
+      - $ref: '#/components/parameters/isbn'
+    get:
+      summary: Ist das Buch ausgeliehen? (isRented)
+      responses:
+        '200':
+          description: Ausleihstatus
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rental' }
+        '404':
+          description: ISBN nicht gefunden
+    put:
+      summary: Buch ausleihen (rent)
+      description: PUT weil idempotent, die Ausleihe ist eine einzelne Unterressource pro Buch
+      responses:
+        '200':
+          description: Ausgeliehen
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rental' }
+        '404':
+          description: ISBN nicht gefunden
+        '409':
+          description: Ist schon ausgeliehen
+    delete:
+      summary: Buch zurueckgeben (return)
+      responses:
+        '204':
+          description: Zurueckgegeben
+        '404':
+          description: ISBN nicht gefunden
+        '409':
+          description: Buch war gar nicht ausgeliehen
+
+components:
+  parameters:
+    isbn:
+      name: isbn
+      in: path
+      required: true
+      schema: { type: string }
+      example: '1933988673'
+  schemas:
+    Rental:
+      type: object
+      properties:
+        isbn: { type: string, example: '1933988673' }
+        rented: { type: boolean, example: true }
+    Book:
+      type: object
+      required: [isbn, title, authors]
+      properties:
+        isbn: { type: string, example: '1933988673' }
+        title: { type: string, example: Unlocking Android }
+        pageCount: { type: integer, example: 416 }
+        publishedDate:
+          type: object
+          properties:
+            $date: { type: string, format: date-time }
+        thumbnailUrl: { type: string }
+        shortDescription: { type: string }
+        longDescription: { type: string }
+        status: { type: string, enum: [PUBLISH, MEAP] }
+        authors:
+          type: array
+          items: { type: string }
+        categories:
+          type: array
+          items: { type: string }
+        rented: { type: boolean, readOnly: true }

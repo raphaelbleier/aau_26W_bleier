@@ -1,0 +1,65 @@
+{
+  "info": {
+    "name": "A6 Ex2 - Product List API",
+    "description": "Raphael Bleier - Web-Technologien Assignment 6. Postman speichert das Session-Cookie automatisch, deshalb bei ex4 die Requests der Reihe nach ausfuehren.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "All product IDs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/products",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Single product",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/product/sony24105",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "product",
+            "sony24105"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Unknown product (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/product/gibtsnicht",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "product",
+            "gibtsnicht"
+          ]
+        }
+      }
+    }
+  ]
+}

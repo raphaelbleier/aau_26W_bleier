@@ -1,0 +1,53 @@
+h1 {
+    font-family: Verdana, sans-serif;
+    font-size: 2em;
+    margin: 15px;
+}
+
+p {
+    text-align: center;
+    margin: 10px;
+}
+
+/* fieldset in der mitte, am anfang versteckt */
+fieldset {
+    width: fit-content;
+    margin: 10px auto;
+    display: none;
+}
+
+input:focus {
+    outline: 2px solid lightblue;
+    background-color: lightblue;
+}
+
+#buttons {
+    text-align: center;
+    margin: 10px;
+}
+
+button {
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin: 5px;
+}
+
+#startButton {
+    background-color: blue;
+}
+
+/* check button gruen, aber erst nach dem start sichtbar */
+#checkButton {
+    background-color: green;
+    display: none;
+}
+
+#checkButton:disabled {
+    opacity: 0.5;
+}
+
+.feedback {
+    text-align: center;
+    margin: 10px;
+}

@@ -1,0 +1,8 @@
+{
+    "database": {
+        "host": "/var/run/postgresql",
+        "user": "bleier",
+        "password": "",
+        "db": "webtechsessions"
+    }
+}

@@ -1,0 +1,161 @@
+<html lang="de">
+
+<head>
+	<title>CSS in Action</title>
+	<style>
+      /*Add your style from Assignment 1 Exercise 8-->*/
+		/* body als flex spalte damit der footer immer ganz unten ist */
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* header: text links, logo rechts */
+		header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: rgb(187, 204, 232);
+		}
+
+		header h1 {
+			font-family: Verdana, sans-serif;
+			font-size: 2em;
+			margin: 10px;
+		}
+
+		#logoImage {
+			margin: 10px;
+			height: 4em;
+		}
+
+		/* menue in einer zeile */
+		nav {
+			background-color: rgb(20, 90, 204);
+		}
+
+		nav ul {
+			display: flex;
+			gap: 20px;
+			list-style: none;
+			margin: 0;
+			padding: 5px 10px;
+		}
+
+		nav li:nth-child(2) {
+			color: red;
+		}
+
+		/* content nimmt den restlichen platz, footer wird nach unten gedrueckt */
+		.content {
+			flex: 1;
+			padding: 0 20px;
+		}
+
+		.content > section > h1 {
+			font-family: Verdana, sans-serif;
+			font-size: 1.5em;
+		}
+
+		.content > section:nth-of-type(2) > h1 {
+			color: red;
+		}
+
+		/* damit die floats nicht aus der section rausragen */
+		section {
+			display: flow-root;
+		}
+
+		section img {
+			width: 100px;
+			float: left;
+			margin: 0 10px 10px 0;
+		}
+
+		/* jede zweite section bild rechts */
+		section:nth-of-type(even) img {
+			float: right;
+			margin: 0 0 10px 10px;
+		}
+
+		/* externe links bekommen einen hinweis */
+		.content a[href^="http"]::after {
+			content: " (external)";
+		}
+
+		footer {
+			background-color: rgb(20, 90, 204);
+		}
+
+		footer ul {
+			display: flex;
+			justify-content: center;
+			gap: 5px;
+			list-style: none;
+			margin: 0;
+			padding: 5px;
+		}
+
+	</style>
+	<script src="editable.js" defer></script>
+</head>
+
+<body>
+	<header>
+		<h1>CSS in Action</h1>
+		<img id="logoImage" src="https://upload.wikimedia.org/wikipedia/commons/d/d5/CSS3_logo_and_wordmark.svg" alt="CSS logo">
+	</header>
+	<nav>
+		<ul>
+			<li>Topic 1</li>
+			<li>Topic 2</li>
+			<li>Topic 3</li>
+			<li>Topic 4</li>
+		</ul>
+	</nav>
+	<div class="content">
+		<section>
+			<h1>Topic 1</h1>
+			<img src="pic1.jpg" alt="Image of a lecture room">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+			invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+			<p>
+				<strong>Lorem ipsum</strong> dolor sit <a href="http://www.aau.at" target="_blank">amet</a>, consetetur
+				sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam <a
+					href="erat.html" target="_blank">erat</a>.
+			</p>
+		</section>
+
+		<section>
+			<h1>Topic 2</h1>
+			<img src="pic2.jpg" alt="Image of a lecture room"> Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+			invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+			<p>
+				Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam <strong>nonumy</strong> eirmod tempor
+				invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Stet clita kasd gubergren, no sea
+				takimata sanctus est Lorem ipsum dolor sit <a href="http://www.aau.at" target="_blank">amet</a>.
+			</p>
+		</section>
+
+		<section>
+			<h1>Topic 3</h1>
+			<img src="pic3.jpg" alt="Image of a lecture room"> Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+			invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+			<p>
+				Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+				labore et dolore magna aliquyam erat, sed diam voluptua.
+			</p>
+		</section>
+	</div>
+	<footer>
+		<ul>
+			<li>Impressum</li>
+			<li>Legal</li>
+			<li>Contact</li>
+		</ul>
+	</footer>
+
+</body>
+
+</html>

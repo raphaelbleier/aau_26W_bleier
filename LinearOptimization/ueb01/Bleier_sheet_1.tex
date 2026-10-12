@@ -1,0 +1,128 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,geometry,enumitem}
+\geometry{margin=24mm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\newcommand{\match}{\(\checkmark\)\;Match.}
+\title{Linear Optimization (311.160)\\Exercise sheet 1}
+\author{Raphael Bleier}
+\date{6 October 2026}
+\begin{document}
+\maketitle
+\section*{Exercise 1.1: definitions and comparison}
+The AI answers below use the maximization convention from the current lecture notes. For every item, the comparison refers to \emph{Lecture 2 -- 6.10.2026}, PDF pages 5, 8 and 9. Each answer is followed by the corresponding lecture definition and a check.
+\begin{enumerate}[leftmargin=*,itemsep=10pt]
+\item \textbf{Standard form.}
+
+\textit{AI answer:} A linear program in standard form is
+\[
+\max\;c^{\mathsf T}x\quad\text{subject to}\quad Ax=b,\quad x\geq0,
+\]
+where $A\in\mathbb R^{m\times n}$, $b\in\mathbb R^m$ and $c,x\in\mathbb R^n$. The objective is linear, the constraints $Ax=b$ are equalities, and all variables are nonnegative.
+
+\textit{Lecture comparison (p.~5):} The notes give precisely this maximization problem as standard form. \match\ Other textbooks may use a different convention, but that is not the convention used here.
+\item \textbf{Feasible or infeasible vector.}
+
+\textit{AI answer:} A vector $x\in\mathbb R^n$ is feasible if it satisfies every constraint, that is, $Ax=b$ and $x\geq0$. It is infeasible if at least one constraint fails.
+
+\textit{Lecture comparison (p.~8):} The notes call a vector satisfying all constraints feasible and any other vector infeasible. \match
+\item \textbf{Feasible set.}
+
+\textit{AI answer:} The feasible set contains all feasible vectors:
+\[
+C=\{x\in\mathbb R^n:Ax=b,\ x\geq0\}.
+\]
+\textit{Lecture comparison (p.~8):} The notes define the same set $C$. \match
+\item \textbf{Feasible or infeasible linear program.}
+
+\textit{AI answer:} The LP is feasible if $C\neq\varnothing$, meaning that some vector satisfies all constraints. It is infeasible if $C=\varnothing$.
+
+\textit{Lecture comparison (p.~8):} The distinction is exactly $C\neq\varnothing$ versus $C=\varnothing$. \match
+\item \textbf{Optimal value.}
+
+\textit{AI answer:} For a maximization LP, the optimal value is
+\[
+\gamma=\sup\{c^{\mathsf T}x:x\in C\}\in\mathbb R\cup\{-\infty,+\infty\},
+\qquad \sup\varnothing=-\infty.
+\]
+Thus an infeasible LP has value $-\infty$, a feasible unbounded LP has value $+\infty$, and a feasible bounded LP has a finite real optimal value.
+
+\textit{Lecture comparison (pp.~8--9):} The notes use this supremum and the same empty-set convention, then list these three cases. \match\ The supremum definition does not itself assert that a maximizer exists.
+\item \textbf{Bounded or unbounded linear program.}
+
+\textit{AI answer:} A \emph{feasible} maximization LP is unbounded if, for every $M\in\mathbb R$, there is an $x\in C$ with $c^{\mathsf T}x>M$. It is bounded if some $M\in\mathbb R$ satisfies $c^{\mathsf T}x\leq M$ for every $x\in C$.
+
+\textit{Lecture comparison (p.~8):} These are exactly the two conditions in the notes. \match\ Both definitions assume feasibility; an infeasible LP is a separate case. Boundedness here concerns the objective, not whether the feasible set is a bounded set.
+\item \textbf{Optimal solution.}
+
+\textit{AI answer:} A vector $x^*\in C$ is an optimal solution, or maximizer, if
+\[
+c^{\mathsf T}x^*\geq c^{\mathsf T}x\quad\text{for every }x\in C.
+\]
+Equivalently, it is feasible and attains the optimal value.
+
+\textit{Lecture comparison (p.~9):} The notes use the same comparison with every feasible vector and also call such a vector a maximizer. \match
+\end{enumerate}
+\newpage
+\section*{Exercise 1.2: choosing information sources}
+Let $x_i\in\{0,1\}$ indicate whether option $i$ is chosen:
+\begin{center}
+\begin{tabular}{clrr}
+$i$ & Option & Value & Time (min)\\\hline
+1 & Ask a colleague & 4 & 5\\
+2 & Attend the first lecture & 8 & 9\\
+3 & Read the Moodle course description & 7 & 7\\
+4 & Read the LV-Karte & 16 & 15\\
+5 & Do nothing & 40 & 30
+\end{tabular}
+\end{center}
+Each option is chosen at most once. Values and times add across chosen options.
+
+\textbf{Main interpretation: at least two actual information sources.}
+Doing nothing provides no information and therefore does not count as a source. The requirement to use at least two sources is mandatory, not waived by option 5. The binary optimization model is
+\begin{align*}
+\max\quad &4x_1+8x_2+7x_3+16x_4+40x_5\\
+\text{subject to}\quad
+&5x_1+9x_2+7x_3+15x_4+30x_5\leq30,\\
+&x_1+x_2+x_3+x_4\geq2,\\
+&x_i\in\{0,1\},\qquad i=1,\ldots,5.
+\end{align*}
+Option 5 already consumes the entire time budget. Every actual source takes positive time, so $x_5=1$ contradicts the requirement to use two sources. Hence every feasible choice has $x_5=0$; retaining it in the model makes that consequence explicit. If all five listed options are instead counted toward the condition $\sum_{i=1}^5x_i\geq2$, the feasible choices are unchanged because option 5 still cannot be combined with another option.
+
+As a check, the best feasible choice is $(x_1,x_2,x_3,x_4,x_5)=(1,1,0,1,0)$: it uses three information sources, takes $5+9+15=29$ minutes, and has value $4+8+16=28$.
+
+\textbf{Alternative interpretation: doing nothing is an opt-out.}
+The inclusion of option 5 could mean that the student may decline to gather information altogether. That reading needs an explicit exception to the two-source requirement. Under that assumption, replace the source constraint by
+\[
+x_1+x_2+x_3+x_4\geq2(1-x_5),
+\qquad x_i+x_5\leq1\quad(i=1,\ldots,4),
+\]
+while keeping the objective, time budget and binary domains. Then either at least two sources are used, or only option 5 is chosen. The latter gives value 40 in 30 minutes and is optimal for this alternative model. It does \emph{not} satisfy the sheet's literal two-source requirement, so the main model above is my formulation without an opt-out exception.
+
+This is a binary integer linear optimization problem, following the selection model in Lecture 1, p.~8. No conversion to standard form is needed.
+\newpage
+\section*{Exercise 1.3: FreshShine}
+Define the monthly production quantities
+\begin{align*}
+x_1&=\text{units of Citrus Shower Gel},\\
+x_2&=\text{units of Citrus Shampoo},\\
+x_3&=\text{units of Citrus Body Lotion}.
+\end{align*}
+For the LP formulation, quantities are divisible and $x_1,x_2,x_3\in\mathbb R_{\geq0}$. If whole units were required, integer domains would be an additional assumption.
+
+Since all produced units can be sold, the profit in euros is $3x_1+5x_2+4x_3$. The model is
+\begin{align*}
+\max\quad &3x_1+5x_2+4x_3\\
+\text{subject to}\quad
+&x_1+2x_2+x_3\leq170 &&\text{(machine A, hours/month)},\\
+&x_1+x_2+2x_3\leq150 &&\text{(machine B, hours/month)},\\
+&3x_2+x_3\leq180 &&\text{(machine C, hours/month)},\\
+&x_1,x_2,x_3\geq0.
+\end{align*}
+Citrus Shower Gel uses no machine C time, which explains its zero coefficient in that constraint. There is no sales constraint because the sheet states that every produced unit can be sold. This follows the production-model structure in Lecture 1, pp.~3--4: nonnegative quantities, total profit, and one constraint for each limited resource. No conversion to standard form is needed.
+
+\end{document}

@@ -1,0 +1,27 @@
+# aau_26W_bleier
+
+Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Klagenfurt (AAU), mit Erklärung zu jeder Lösung.
+
+![Semester](https://img.shields.io/badge/Semester-WS%202026%2F27-informational)
+![Uni](https://img.shields.io/badge/AAU-Klagenfurt-blue)
+![LaTeX](https://img.shields.io/badge/LaTeX-Theorie-008080)
+![JavaScript](https://img.shields.io/badge/JavaScript-Web--Technologien-F7DF1E)
+![Last commit](https://img.shields.io/github/last-commit/raphaelbleier/aau_26W_bleier?label=letztes%20Update)
+
+## Kurse
+
+| Kurs | LV-Nr. | Ordner | Blätter | Status |
+|---|---|---|---|---|
+| Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 2 | laufend (Blatt 1 und 2 gelöst) |
+| Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
+
+Logische Programmierung ist in diesem Repo noch nicht enthalten.
+
+## Struktur
+
+```
+<Kurs>/ueb<NN>/        Linear Optimization
+<Kurs>/Assignment<NN>/ Web-Technologien (bestehende Benennung, bleibt erhalten)
+```
+
+Jeder Kurs hat eine eigene README mit Blattübersicht, jeder Blattordner eine README mit den Aufgaben. Die Lösung liegt als PDF und/oder Quellcode im Blattordner, die Erklärung steht in der README bzw. in der Lösungs-PDF. Wie künftige Blätter abgelegt werden, steht in [CONVENTIONS.md](CONVENTIONS.md).
