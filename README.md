@@ -15,7 +15,6 @@ Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Kl
 | Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 2 | laufend (Blatt 1 und 2 gelöst) |
 | Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
 | Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 1 | Blatt 1 vorbereitet, Gruppennummer/Abgabe offen |
-| Systemsicherheit | 621.150; UE 621.152/621.153 | [Systemsicherheit](Systemsicherheit) | 1 | Blatt 1 gelöst; Blatt 0, 2 und 3 noch offen |
 
 Logische Programmierung ist in diesem Repo noch nicht enthalten.
 
