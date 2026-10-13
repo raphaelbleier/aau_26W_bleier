@@ -1,0 +1,331 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{enumitem,xcolor,booktabs,tabularx,tikz}
+\usepackage{ragged2e,xurl}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\usetikzlibrary{arrows.meta,positioning,fit}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newcommand{\aufgabe}[1]{\section*{Aufgabe #1}}
+\newcommand{\angabe}[1]{\textit{#1}\par\smallskip}
+\newcommand{\teil}[1]{\subsection*{(#1)}}
+\newcommand{\why}[1]{\text{\small\color{black!65}#1}}
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,fonttitle=\bfseries\small,title={Erklärung}}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\newcommand{\ergebnis}[1]{\[\boxed{\text{#1}}\]}
+\begin{document}
+\begin{center}
+{\Large\bfseries Systemsicherheit: Übungsblatt 01}\\
+Raphael Bleier, Wintersemester 2026/27\\
+\ifexplain Erklärung\else Lösung\fi
+\end{center}
+\smallskip
+Quellenstand: 13.10.2026. Grundlage sind die aktuellen VO-Folien
+\emph{Einleitung und Motivation}, insbesondere Folien 1-4 bis 1-8 und 1-18 bis 1-27,
+sowie das im Blatt verlinkte Microsoft-Learn-Modul zu Datenflussdiagrammen.
+KI-Unterstützung: Hermes Agent, Modell \texttt{gpt-6.1-sol} über \texttt{openai-codex};
+Erstellung und getrennte Zweitprüfung am 13.10.2026. Ein genauer Agent-Build ist nicht verfügbar.
+
+\aufgabe{1.1}
+\angabe{Finden Sie aktuelle Informationsquellen zur IT-Sicherheit: allgemeine Veröffentlichungen,
+News-Dienste, wissenschaftliche Datenbanken, Ressourcen der Universitätsbibliothek und weitere interessante Seiten.}
+\teil{a}
+Das BSI veröffentlicht Lageberichte, Studien, Broschüren und Checklisten unter
+\url{https://www.bsi.bund.de/DE/Service-Navi/Publikationen/publikationen_node.html}.
+Diese Quellen passen für Grundlagen, Empfehlungen und eingeordnete Bedrohungslagen.
+Für eine konkrete neue Schwachstelle ist zusätzlich die aktuelle Herstellerwarnung nötig;
+ein älterer Lagebericht ersetzt keine aktuelle Versionsprüfung.
+\ergebnis{BSI-Publikationen für Grundlagen und Einordnung}
+\explain{Hier trennen wir Hintergrundwissen von einer akuten Warnung. Ein Bericht kann gut erklären,
+warum eine Gefahr wichtig ist, während ein Hersteller-Advisory die betroffenen Versionen und die Abhilfe nennt.}
+\teil{b}
+\emph{heise security} bietet Nachrichten, Warnungen und Hintergründe:
+\url{https://www.heise.de/security/}.
+CERT.at bündelt Warnungen und weitere Meldungen unter
+\url{https://cert.at/de/services/meldungen/}.
+Bei einem konkreten Vorfall prüfe ich Veröffentlichungsdatum, spätere Aktualisierungen und die verlinkte Primärquelle,
+weil eine frühe Meldung noch nicht alle betroffenen Versionen oder Gegenmaßnahmen enthalten muss.
+\ergebnis{heise security und CERT.at für laufende Meldungen}
+\explain{Eine Meldung ist der Einstieg, nicht das Ende der Prüfung. Besonders bei Sicherheitsupdates
+zählt, ob die eigene Version betroffen ist und ob inzwischen ein korrigiertes Advisory erschienen ist.}
+\teil{c}
+\emph{dblp} erschließt wissenschaftliche Informatikpublikationen in Zeitschriften und Tagungsbänden:
+\url{https://dblp.org/}.
+Es ist ein bibliografischer Index, keine Garantie für freien Volltext oder die Qualität jedes einzelnen Beitrags.
+Über den Eintrag lässt sich die ursprüngliche Veröffentlichung finden.
+Als Volltextplattform ist außerdem IEEE Xplore relevant; die AAU nennt sie in ihren Zugriffsangeboten für elektronische Medien.
+\ergebnis{dblp für Nachweise; IEEE Xplore für Fachpublikationen}
+\explain{Wir brauchen hier wissenschaftliche Quellen, keine zweite Nachrichtenliste. Bei dblp
+finden wir die Veröffentlichung und ihre bibliografischen Angaben. Ob der Volltext zugänglich ist,
+prüfen wir anschließend beim Verlag oder über die Bibliothek.}
+\teil{d}
+Die AAU bietet die Literatursuche \emph{surf@ubk}, das Datenbank-Infosystem DBIS und Zugang zu elektronischen Medien an.
+Die offizielle Literatursuche und die DBIS-Seite sind:
+\url{https://www.aau.at/universitaetsbibliothek-klagenfurt/literatursuche/} und
+\url{https://www.aau.at/universitaetsbibliothek-klagenfurt/literatursuche/datenbanken/}.
+Die Seite \emph{Zugriff auf elektronische Medien} nennt unter anderem IEEE Xplore und Springer:
+\url{https://www.aau.at/universitaetsbibliothek-klagenfurt/literatursuche/zugriff-auf-elektronische-medien/}.
+Zugang und Lizenzumfang sind für das jeweilige Werk zu prüfen. Ein Suchtreffer bedeutet nicht automatisch freien Volltext.
+\ergebnis{surf@ubk, DBIS und lizenzierte elektronische Medien}
+\explain{Die Suche und das Zugriffsrecht sind zwei verschiedene Dinge. DBIS hilft bei der Auswahl
+einer Datenbank, surf@ubk bei der Literatursuche. Für einen konkreten Artikel gelten trotzdem dessen Zugriffsbedingungen.}
+\teil{e}
+OWASP stellt frei zugängliche Informationen zur Sicherheit von Webanwendungen bereit.
+Die Top-Ten-Projektseite ist \url{https://owasp.org/www-project-top-ten/};
+sie nennt zum Prüfzeitpunkt die Ausgabe 2025 als aktuelle veröffentlichte Fassung.
+Microsoft Learn bietet das im Blatt vorgeschriebene Modul zu Threat Modeling mit Datenflussdiagrammen.
+Es erklärt Prozesse, Datenspeicher, externe Entitäten, Datenflüsse und Vertrauensgrenzen.
+\ergebnis{OWASP und Microsoft Learn als praktische Ergänzung}
+\explain{Diese Seiten ergänzen die anderen Quellen: OWASP hilft bei Webrisiken, Microsoft bei der
+Modellierung. Ein konkretes System muss trotzdem einzeln betrachtet werden; eine allgemeine Liste
+enthält nicht automatisch jede relevante Bedrohung.}
+
+\aufgabe{1.2}
+\angabe{Vergleichen Sie Vertraulichkeit, Integrität, Verfügbarkeit und Authentizität für
+Postkarte (Pk), Brief (B), Einschreiben (E), Einschreiben mit Rückschein (ER) und die jeweiligen elektronischen Varianten ePk, eB, eE, eER.}
+Die elektronischen Varianten sind hier funktionale Entsprechungen aus den VO-Folien, keine Behauptung über ein bestimmtes Produkt.
+Vertraulichkeit verhindert unberechtigten Informationsgewinn; Integrität betrifft unbemerkte unberechtigte Änderungen.
+Verfügbarkeit betrifft die Nutzbarkeit. Authentizität betrifft die Echtheit von Ursprung und Inhalt.
+
+{\footnotesize
+\begin{tabularx}{\linewidth}{>{\RaggedRight\arraybackslash}p{2.2cm}YYYY}
+\toprule
+Anforderung & Pk & B & E & ER\\ \midrule
+Vertraulichkeit & Nein: Inhalt offen lesbar. & Teilweise: Umschlag erschwert Lesen, garantiert es nicht. & Wie Brief; Empfangsbestätigung schützt den Inhalt nicht zusätzlich. & Wie Brief; Rückschein schafft keine zusätzliche Geheimhaltung.\\
+Integrität & Schwach: Inhalt ergänzbar; Änderungen können sichtbar sein. & Umschlag/Siegel können Öffnen anzeigen, sind aber überwindbar. & Zustellnachweis belegt nicht den unveränderten Inhalt. & Rückschein belegt nicht den unveränderten Inhalt.\\
+Verfügbarkeit & Zustellung abhängig von Postbetrieb, Adresse und Verlust. & Gleiche Abhängigkeiten; keine garantierte Zustellung. & Dokumentierte Übergabe bzw. Zustellversuch; Verlust/Ausfall bleiben möglich. & Wie E; auch Übermittlung des Rückscheins kann ausfallen.\\
+Authentizität & Absender frei eintragbar; Unterschrift nur Indiz. & Eigenhändige Unterschrift als überprüfbares Indiz; Umschlag allein genügt nicht. & Bestätigte Übergabe ersetzt keine Prüfung des Verfassers. & Rückschein stärkt Empfangsnachweis, nicht automatisch Verfasser- oder Inhaltsechtheit.\\ \bottomrule
+\end{tabularx}}\par
+\explain{Ein Einschreiben löst vor allem eine Nachweisfrage. Es macht den Inhalt nicht automatisch
+geheim oder unveränderbar. Auch ein leerer Umschlag kann eingeschrieben zugestellt werden;
+deshalb müssen Empfang des Umschlags und Nachweis seines Inhalts getrennt werden.}
+
+{\footnotesize
+\begin{tabularx}{\linewidth}{>{\RaggedRight\arraybackslash}p{2.2cm}YYYY}
+\toprule
+Anforderung & ePk & eB & eE & eER\\ \midrule
+Vertraulichkeit & Unverschlüsselte E-Mail: keine Ende-zu-Ende-Geheimhaltung. & Ende-zu-Ende-Verschlüsselung möglich; Metadaten bleiben ggf. sichtbar. & Inhalt kann verschlüsselt sein; vertrauenswürdiger Zustelldienst erforderlich. & Wie eE; Quittungen müssen selbst angemessen geschützt werden.\\
+Integrität & Ohne geeigneten Schutz Inhalt/Absender veränderbar. & Authentifizierte Verschlüsselung oder Signatur erkennt unberechtigte Änderungen. & Signierter Zustellnachweis kann an den Inhalts-Hash gebunden werden. & Signierte, inhaltsgebundene Rückquittung ermöglicht zusätzliche Nachweisprüfung.\\
+Verfügbarkeit & Abhängig von Netzen, Servern und Konten. & Zusätzlich Schlüsselzugang nötig; Verschlüsselung garantiert keine Erreichbarkeit. & Zustelldienst und sichere Ablage verbessern Nachvollziehbarkeit, nicht absolute Verfügbarkeit. & Wie eE; auch Rückquittung und deren Ablage müssen erreichbar sein.\\
+Authentizität & From-Feld allein nicht vertrauenswürdig. & Digitale Signatur mit geprüfter Schlüssel-/Identitätsbindung. & Authentifizierte Parteien und signierte Nachweise eines vertrauenswürdigen Dienstes. & Zusätzlich überprüfbare Empfangsquittung, gebunden an Empfänger und konkreten Inhalt.\\ \bottomrule
+\end{tabularx}}\par
+Eine automatische E-Mail-Lesebestätigung genügt nicht als kryptografisch gesicherter Rückschein.
+Ein Inhalts-Hash braucht einen authentischen Nachweis, weil ein Angreifer bei einer ungeschützten Nachricht
+auch einen neuen Hash mitschicken kann. Bei Signaturen bleiben Schlüsselvertrauen, Schlüsselkompromittierung
+und die rechtlichen Anforderungen an einen verbindlichen Nachweis zu berücksichtigen.
+\ergebnis{Empfangsnachweis ist kein vollständiger CIA+-Schutz}
+\explain{Verschlüsselung und Signatur haben verschiedene Aufgaben. Verschlüsselung schützt den
+Inhalt vor Mitlesen. Eine Signatur kann Änderungen und die Herkunft prüfbar machen, wenn die
+Zuordnung des Schlüssels stimmt. Keines von beiden verhindert einen Serverausfall.}
+
+\aufgabe{1.3}
+\angabe{(a) Nennen Sie andere Angriffsziele als Informationen. (b) Beschreiben Sie Unterbrechen,
+Ausschleusen, Modifizieren und Erzeugen anhand von Beispielen und ordnen Sie die Anforderungen aus CIA+ zu.}
+\teil{a}
+Angriffsziele sind auch Hardware, Software, Rechenzeit, Stromversorgung, Netzwerkzugang und die Betriebsfähigkeit eines Dienstes.
+Ein Angreifer kann Geräte zerstören, Rechenleistung für fremde Zwecke verwenden oder einen Dienst blockieren.
+Menschen, deren Vertrauen und die Reputation eines Betreibers können ebenfalls Ziele sein.
+Das Angriffsziel muss daher nicht eine gestohlene Datei sein.
+\ergebnis{Auch Infrastruktur, Ressourcen und Menschen sind Ziele}
+\explain{Wir unterscheiden den Wert, der geschädigt werden soll, von der Methode des Angriffs.
+Ein blockierter Dienst verursacht Schaden, selbst wenn keine Daten gestohlen oder verändert werden.}
+\teil{b}
+\emph{Unterbrechen:} Ein Angreifer blockiert die Verbindung zwischen Quelle Q und Ziel Z oder überlastet den Empfänger.
+Das verletzt Verfügbarkeit. Redundante Wege, DDoS-Abwehr, Notfallabläufe und Kapazitätsplanung können die Auswirkungen begrenzen.
+Verschlüsselung verhindert das Unterbrechen nicht.
+\explain{Der Pfeil zum Ziel kommt hier nicht mehr an. Deshalb prüfen wir zuerst die Verfügbarkeit,
+nicht die Geheimhaltung. Eine sichere verschlüsselte Verbindung kann trotzdem unterbrochen werden.}
+
+\emph{Ausschleusen:} Ein Angreifer kopiert übertragene Bestelldaten, während die Übertragung weiterläuft.
+Das verletzt Vertraulichkeit. Geeignete Verschlüsselung und Zugriffsschutz wirken dagegen.
+Der Vorfall kann unbemerkt bleiben, weil die ursprüngliche Nachricht weiterhin ankommt.
+\explain{Beim Mitlesen fehlt dem Empfänger keine Nachricht. Daraus folgt: Ein funktionierender Dienst
+ist kein Beleg für vertrauliche Kommunikation. Wir müssen die Leserechte und den Transport separat schützen.}
+
+\emph{Modifizieren:} Ein Angreifer ändert in einer Zahlungsanweisung den Empfänger oder den Betrag.
+Das verletzt Integrität und kann zugleich Authentizität betreffen.
+MACs, digitale Signaturen oder authentifizierte Verschlüsselung ermöglichen die Erkennung unberechtigter Änderungen,
+wenn die Schlüssel und ihre Zuordnung geschützt sind.
+\explain{Eine reine Prüfsumme ist nicht genug, wenn der Angreifer sie ebenfalls ersetzen kann.
+Der Nachweis muss so geschützt sein, dass er nicht zusammen mit dem Inhalt neu gefälscht werden kann.}
+
+\emph{Erzeugen:} Ein Angreifer sendet eine erfundene Bestellung im Namen eines anderen Benutzers.
+Das verletzt insbesondere Authentizität. Authentifizierung, geprüfte Signaturen und Autorisierung wirken dagegen.
+Eine wiederholte alte gültige Nachricht erfordert zusätzlich Replay-Schutz, etwa eindeutig gebundene Transaktionsnummern.
+\ergebnis{Unterbrechen: A; Ausschleusen: C; Ändern: I; Fälschen: Echtheit}
+\explain{Die Zuordnung nennt den Schwerpunkt. In einem realen Angriff können mehrere Anforderungen
+zugleich verletzt werden. Besonders das Wiederholen einer alten gültigen Nachricht zeigt, dass eine
+prüfbare Herkunft noch nicht beweist, dass eine neue Transaktion gewollt ist.}
+
+\aufgabe{1.4}
+\angabe{Betrachten Sie den öffentlichen PC-Raum mit Online-Bestellern, öffentlichem WLAN, Internet,
+Online-Shopping-Server und Bank. (a) Ergänzen Sie Komponenten. (b) Welche sind angreifbar?
+(c) Wie? (d) Wer sind mögliche Angreifer? (e) Welche Motive gibt es? (f) Welche Schutzmaßnahmen passen?}
+\teil{a}
+Die ergänzte Grafik enthält DNS, Shop-Datenbank, einen möglichen Zahlungsdienstleister und Administration.
+Der lokale Server im PC-Raum und die Internetanbindung der Bank aus der Ausgangsgrafik bleiben erhalten.
+Betriebssystem, Browser, Erweiterungen und lokale Konten gehören zu den Endgeräten.
+Der WLAN-Zugang und die lokale Infrastruktur bleiben eigene Angriffspunkte.
+Gestrichelte Komponenten und Verbindungen sind Ergänzungen mit angenommenen Beziehungen, keine bereits festgelegte Architektur.
+Die Pfeile zeigen Kommunikationsbeziehungen, nicht einen festgelegten zeitlichen Zahlungsablauf.
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}[>=Stealth, node distance=8mm, every node/.style={font=\small}, comp/.style={draw,rounded corners,align=center,minimum height=8mm,text width=2.05cm,inner sep=3pt}]
+\node[comp,text width=2.1cm] (pc) at (0,0) {Besteller\\PC/Browser/\\Konto};
+\node[comp] (local) at (3,0) {Lokaler Server\\im PC-Raum};
+\node[comp] (wifi) at (5.5,0) {Netzzugang\\öffentliches WLAN};
+\node[comp] (net) at (8,0) {Internet};
+\node[comp] (shop) at (10.5,0) {Shop-Server};
+\node[comp,dashed] (dns) at (1.5,-2) {DNS};
+\node[comp,dashed] (db) at (10.5,-2) {Shop-Datenbank};
+\node[comp,dashed,text width=2.8cm] (pay) at (6,-4) {Möglicher\\Zahlungsdienst};
+\node[comp] (bank) at (9,-4) {Bank};
+\node[comp,dashed,text width=2.8cm] (admin) at (0,-4) {Administration\\Updates/Backup};
+\draw[<->] (pc)--(local); \draw[<->] (local)--(wifi);
+\draw[<->] (wifi)--(net); \draw[<->] (net)--(shop);
+\draw[<->] (net.south)--(bank.north);
+\draw[<->,dashed] (pc.south) |- (dns.west); \draw[<->,dashed] (shop)--(db);
+\draw[<->,dashed] (shop.south west)--(pay.north east); \draw[<->,dashed] (pay)--(bank);
+\draw[<->,dashed] (admin.north) -- ++(0,1) -| (local.south);
+\end{tikzpicture}
+\end{center}
+\ergebnis{Endgeräte, Namensauflösung, Datenhaltung und Betrieb ergänzen}
+\explain{Die ursprüngliche Grafik zeigt vor allem den sichtbaren Weg einer Bestellung. Wir ergänzen
+Komponenten, deren Ausfall oder Missbrauch diesen Weg beeinflussen kann. Eine Datenbank oder ein
+Administratorzugang muss nicht im Browser sichtbar sein, um sicherheitsrelevant zu sein.}
+\teil{b}
+Alle dargestellten und ergänzten Komponenten können grundsätzlich angegriffen werden.
+Das gilt auch für Nutzer, Administratoren und Dienstleister, weil Menschen Zugangsdaten preisgeben oder unsichere Einstellungen übernehmen können.
+Die konkreten Bedrohungen unterscheiden sich nach Zugang, Berechtigungen und vorhandenen Schwachstellen.
+\ergebnis{Alle Komponenten prüfen, nicht nur den Shop-Server}
+\explain{Die Aussage bedeutet nicht, dass jede Komponente gleich leicht angreifbar ist. Ein öffentlicher
+PC hat andere Risiken als die interne Datenbank. Wir müssen beides prüfen und danach priorisieren.}
+\teil{c}
+Am öffentlichen PC sind manipulierte Browser, schädliche Erweiterungen, Keylogger oder verbliebene Sitzungen denkbar.
+Am lokalen Server können unberechtigte Zugriffe, unsichere Konfigurationen oder Überlastung den PC-Raum betreffen.
+Im WLAN sind ein falscher Access Point, Mitschneiden ungeschützter Daten und Störungen möglich.
+DNS-Manipulation kann zu einem falschen Ziel führen; eine korrekte HTTPS-Zertifikatsprüfung ist dabei ein eigener Schutzschritt.
+Beim Shop sind beispielsweise fehlende Zugriffskontrollen, injizierte Datenbankabfragen und Überlastung relevant.
+In Datenbank und Backups drohen unberechtigtes Lesen, Ändern oder Löschen.
+An Zahlungsdienst und Bank drohen Phishing, gefälschte Zahlungsaufträge oder kompromittierte Konten.
+Bei Administration und Updates sind gestohlene privilegierte Zugänge oder manipulierte Softwarelieferungen relevant.
+\ergebnis{Angriffe nach Endgerät, Netz, Anwendung und Betrieb ordnen}
+\explain{Wir nennen keine beliebige Angriffsliste, sondern ordnen jeder Komponente passende Wege zu.
+TLS kann beispielsweise beim Transport helfen, schützt aber keine Sitzung vor einem Keylogger
+auf dem bereits kompromittierten Endgerät.}
+\teil{d}
+Mögliche Angreifer sind externe Kriminelle, Mitbenutzer des PC-Raums, böswillige Kunden,
+Mitarbeiter des Shops, Administratoren oder kompromittierte Dienstleister.
+Auch ein Betreiber kann Daten unberechtigt verwenden. Ein aktiver Angreifer ist von einer Person zu unterscheiden,
+die aus Versehen einen sicherheitsrelevanten Fehler macht.
+\ergebnis{Externe und berechtigte interne Personen berücksichtigen}
+\explain{Ein Zugangsausweis oder ein gültiges Konto macht eine Person nicht automatisch vertrauenswürdig.
+Für Insider sind gerade ihre vorhandenen Rechte relevant. Unabsichtliche Fehler gehören dagegen
+zur Bedrohungsanalyse, ohne die Person als vorsätzlichen Täter zu bezeichnen.}
+\teil{e}
+Motive sind finanzieller Gewinn, Datendiebstahl, Identitätsmissbrauch, Erpressung, Sabotage,
+Rache, Wettbewerbsvorteile oder ein politisches Ziel.
+Neugier und der Wunsch nach Anerkennung können ebenfalls zu unberechtigten Angriffen führen.
+Diese Motive erklären das Handeln, erteilen aber keine Erlaubnis zum Angriff.
+\ergebnis{Motive reichen von Gewinn bis Sabotage und Anerkennung}
+\explain{Das Motiv hilft beim Priorisieren. Ein Angreifer mit wirtschaftlichem Ziel sucht zum Beispiel
+nach Konten oder verkäuflichen Daten. Die rechtliche Bewertung eines unberechtigten Zugriffs
+ändert sich nicht dadurch, dass jemand nur neugierig war.}
+\teil{f}
+Auf fremden öffentlichen PCs sollten sensible Bestellungen und Bankgeschäfte vermieden werden.
+Eigene Endgeräte brauchen Updates und kontrollierte Software. Sitzungen sind abzumelden;
+gespeicherte Zugangsdaten und Zahlungsinformationen gehören nicht auf öffentliche Geräte.
+HTTPS mit geprüften Zertifikaten schützt geeignete Transportverbindungen, nicht alle Endgerätrisiken.
+Shop und Datenbank brauchen Eingabevalidierung, parametrisierte Abfragen, Zugriffskontrollen und getrennte Berechtigungen.
+Der lokale Server braucht ebenfalls Updates, eingeschränkte Rechte, kontrollierte Konfiguration und Wiederherstellungsmöglichkeiten.
+Administrative Konten sollten mit Mehrfaktor-Authentifizierung geschützt und vom normalen Betrieb getrennt werden.
+Backups, Wiederherstellungstests, DDoS-Vorsorge, Protokollierung, Schulungen und klare Meldewege ergänzen die technischen Maßnahmen.
+Beim Bezahlen sind Zahlungsempfänger und Betrag vor der Bestätigung zu prüfen.
+\ergebnis{Technik, Organisation und geschulte Personen gemeinsam schützen}
+\explain{Die Maßnahmen werden auf die vorher genannten Angriffe bezogen. Wir versprechen keine absolute
+Sicherheit: Gute Schutzmechanismen senken konkrete Risiken. Restrisiken und die Prüfung der Wirksamkeit bleiben Teil des Betriebs.}
+
+\aufgabe{1.5}
+\angabe{Nutzen Sie das verlinkte Microsoft-Modul: (a) Unterschied logisches/physisches DFD?
+(b) Beschreiben Sie das Telehealth-DFD des Blatts. (c) Wo sollten Trust Boundaries stehen und warum?}
+\teil{a}
+Ein logisches DFD beschreibt die fachlichen Vorgänge und die zwischen ihnen fließenden Daten, unabhängig von einer konkreten technischen Implementierung.
+Ein physisches DFD ergänzt die Umsetzung durch konkrete Geräte, Dienste, Speicher und Übertragungswege.
+Beispiel: ``Messdaten übernehmen'' ist eine logische Tätigkeit; eine App, ein Serverprozess und eine bestimmte Datenbank beschreiben deren technische Umsetzung.
+Beide Sichten nutzen externe Entitäten, Prozesse, Datenspeicher und gerichtete Datenflüsse.
+\ergebnis{Logisch: fachliche Aufgabe; physisch: technische Umsetzung}
+\explain{Wir fragen zuerst, was mit den Daten passiert. Erst danach kommt die Frage, welche Software
+oder welches Gerät das erledigt. Diese Trennung verhindert, dass eine Produktliste mit einem
+vollständigen Modell des Datenflusses verwechselt wird.}
+\teil{b}
+Das Blatt zeigt links den Patienten als externe Entität. Dieser sendet eine Login-Anfrage an das Prozess-Element
+\emph{App on patient communication device} und erhält eine Login-Antwort.
+Die App tauscht Authentifizierungsanfragen und Ergebnisse mit dem als Speicher gezeichneten
+\emph{Patient communication devices} aus.
+
+Der Datenspeicher \emph{Patient medical devices} liefert Messungen an diesen Speicher.
+Ein Prozess \emph{Personal/Electronic health record Servers} empfängt Daten von den Kommunikationsgeräten und sendet Daten an diese zurück.
+Die beiden Pfeile heißen nur \emph{Data}; konkrete Inhalte der Rückübertragung sind nicht angegeben.
+Der Prozess tauscht außerdem Daten mit der \emph{Health Database} aus.
+Die Form des Elements ist hierbei wichtig: Im gegebenen DFD sind die medizinischen und die Kommunikationsgeräte
+mit dem Datenspeichersymbol gezeichnet, nicht als externe Personen.
+
+Rechts stehen \emph{Healthcare providers} als externe Entität und \emph{Telehealth service terminals} als Prozess.
+Die Leistungserbringer senden Login-Anfragen an die Terminals und erhalten Antworten.
+Die Terminals und der \emph{login process} tauschen Authentifizierungsanfrage und Ergebnis aus.
+Der Login-Prozess fragt den \emph{Telehealth service Server} ab und erhält ein Abfrageergebnis.
+Dieser Server tauscht Daten mit den Record-Servern und dem Speicher \emph{Database Files} aus.
+Die Flüsse sind keine Garantie für bereits vorhandene Zugriffskontrollen oder Verschlüsselung.
+
+Im gegebenen Modell fließen Messungen direkt zwischen zwei Datenspeichern.
+Nach der Modellierungsregel des Microsoft-Moduls gehört ein Prozess zwischen kommunizierende Datenspeicher.
+Für eine überarbeitete Fassung würde ich deshalb einen Prozess für Erfassung oder Synchronisierung ergänzen,
+ohne ihn als bereits in der Angabe vorhanden darzustellen.
+\ergebnis{Messdaten und Logins über Geräte, Prozesse und Speicher verfolgen}
+\explain{Wir lesen die Symbole vor den Namen. Ein Element mit ``devices'' im Namen ist im Blatt als
+Speicher gezeichnet. Außerdem darf ein fachlich sinnvoller Ablauf nicht mit einer Behauptung
+verwechselt werden, dass eine bestimmte Schutzmaßnahme schon implementiert ist.}
+\teil{c}
+Vertrauensgrenzen gehören an Übergänge zwischen verschiedenen Kontroll- oder Berechtigungsbereichen.
+Für dieses DFD schlage ich folgende Grenzen vor:
+\begin{enumerate}[nosep]
+\item Zwischen Patient und App bzw. patientenseitiger Umgebung: vom externen Nutzer zur Anwendung.
+\item Zwischen medizinischem Gerät und Kommunikationsgerät: unterschiedliche Geräte mit eigener Herkunft und Vertrauensannahmen.
+\item Zwischen patientenseitiger Umgebung und Record-Servern: vom Heim-/Mobilbereich zum Backend.
+\item Zwischen Healthcare providers und Terminals: vom externen Nutzer zum Dienst.
+\item Zwischen Terminal und zentralem Login-Prozess, falls Terminal und Identitätsdienst getrennte Kontroll- oder Berechtigungsbereiche haben.
+\item Zwischen Record-Servern und Telehealth-Server, falls unterschiedliche Betreiber, Dienstkonten oder Sicherheitszonen zuständig sind.
+\item An Schnittstellen zwischen Backend und Datenbank, wenn die Datenhaltung eigene Zugriffsrechte und einen getrennten Sicherheitsbereich hat.
+\end{enumerate}
+Die ersten Nutzer- und Backendübergänge ergeben sich aus den beschriebenen Rollen.
+Die weiteren Grenzen sind ausdrücklich Architekturannahmen und müssen mit der tatsächlichen Deployment- und Rechteverteilung abgeglichen werden.
+Nicht jeder Pfeil ist automatisch eine Vertrauensgrenze.
+An einem solchen Übergang sind Quelle, Authentifizierung, Autorisierung, Eingabeprüfung und angemessener Transport- bzw. Speicherschutz zu prüfen.
+\ergebnis{Grenzen nach Kontrolle und Berechtigungen setzen}
+\explain{Eine Vertrauensgrenze ist kein zusätzliches Kabel. Sie markiert eine Änderung dessen,
+worauf wir uns verlassen dürfen. Bei einer externen Anfrage reicht daher nicht ``die Daten sind angekommen'';
+der empfangende Prozess muss auch prüfen, wer sie geschickt hat und was diese Person tun darf.}
+
+\section*{Quellen}
+VO Systemsicherheit WS 2026/27: \emph{SS\_WS2026\_01.pdf}, Folien 1-4 bis 1-8 und 1-18 bis 1-27,
+\url{https://moodle.aau.at/mod/resource/view.php?id=1489056}.
+Die Antwort zu 1.2 verwendet die funktionalen Post-Entsprechungen der VO.
+
+Microsoft Learn: \emph{Create a threat model using data-flow diagram elements},
+insbesondere die Einheiten zu Prozess, Datenspeicher, externer Entität, Datenfluss und Vertrauensgrenze,
+\url{https://learn.microsoft.com/en-us/training/modules/tm-create-a-threat-model-using-foundational-data-flow-diagram-elements/}.
+Die Definitionen der DFD-Elemente und die Regel für Verbindungen zwischen Datenspeichern stammen aus diesem Modul.
+
+Die aktuellen Recherchequellen für Aufgabe 1.1 sind direkt bei den jeweiligen Antworten verlinkt.
+Es wurden keine persönlichen Erfahrungen oder tatsächlich erfolgten Sicherheitsvorfälle behauptet.
+\end{document}

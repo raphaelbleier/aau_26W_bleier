@@ -1,0 +1,9 @@
+{
+  "model": "gpt-6.1-sol",
+  "provider": "openai-codex",
+  "mode": "separate instance; original page 2 image plus task text and final LaTeX",
+  "result": {
+    "passed": true,
+    "findings": []
+  }
+}

@@ -1,0 +1,13 @@
+# Übungsblatt 01: Grundlagen der Systemsicherheit
+
+Dieses Blatt behandelt Informationsquellen, die Sicherheitsanforderungen CIA+, Angriffsarten, ein Online-Shop-Szenario und das Telehealth-Datenflussdiagramm. Die Lösungen stehen in [loesung_blatt01.pdf](loesung_blatt01.pdf), während [erklaerung_blatt01.pdf](erklaerung_blatt01.pdf) dieselben Antworten um Erklärungskästen ergänzt; beide Fassungen werden aus [blatt01.tex](blatt01.tex) gebaut, damit Korrekturen der Lösungen auch in der Erklärung ankommen. Die Quelle ist gemeinsam.
+
+Die Post-Tabelle unterscheidet Zustellnachweise vom Schutz des Inhalts. Ein Einschreiben verhindert weder das Lesen noch jede Veränderung. Für das Shop-Szenario bleibt die Architektur des Ausgangsbilds erhalten; neue Komponenten und angenommene Beziehungen sind gestrichelt gezeichnet. Beim Telehealth-Modell werden die tatsächlich gezeichneten DFD-Symbole verwendet, auch wenn ein Element mit „devices“ im Namen als Datenspeicher dargestellt ist.
+
+Die Zweitprüfung durch eine getrennte Modellinstanz fand zunächst zwei Fehler: einen fehlenden lokalen Server in der Shop-Grafik und die fehlende Rückrichtung eines Datenflusses. Beides wurde korrigiert. In der zweiten Prüfrunde wurden keine weiteren Fehler gemeldet. Die tatsächlichen Ergebnisse sind in [independent_review.json](independent_review.json) dokumentiert; die erste Runde bleibt in [review_round01.json](review_round01.json) nachvollziehbar.
+
+Eine Abgabefrist ist bei dieser Moodle-Ressource nicht angegeben. Das ist keine Aussage darüber, wann die Aufgaben in der Übung vorbereitet sein müssen. Die offiziellen UE-Beschreibungen verlangen, angekreuzte Aufgaben und ähnliche Beispiele lösen und präsentieren zu können. Es wurden keine Kreuzellisten geändert und keine Moodle-Abgaben vorgenommen.
+
+Verwendet wurden die aktuellen VO-Folien „Einleitung und Motivation“ und das im Aufgabenblatt verlinkte Microsoft-Learn-Modul. Recherchequellen sind direkt bei den Antworten angegeben. Die Originalunterlagen werden nicht in diesem öffentlichen Repository weiterveröffentlicht. [context_used.json](context_used.json) dokumentiert die gelesenen Abschnitte und die Quellversionen.
+
+KI-Unterstützung: Hermes Agent, Modell `gpt-6.1-sol` über `openai-codex`, 13.10.2026. Der Hauptlauf hat die Quellen gelesen, die Lösung erstellt und die PDFs gebaut; eine getrennte Instanz desselben Modells hat Angabe und LaTeX-Quelle geprüft. Eine genaue Agent-Buildnummer ist nicht verfügbar. Der Auftrag war, das Übungsblatt vollständig mit Vorlesungskontext zu lösen, jeden Schritt zu erklären, unabhängig zu prüfen und beide PDF-Fassungen zu bauen. Das ist keine Erklärung einer unbeeinflussten Eigenleistung.

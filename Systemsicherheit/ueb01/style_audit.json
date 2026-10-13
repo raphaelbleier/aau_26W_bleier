@@ -1,0 +1,47 @@
+{
+  "ueb01/blatt01.tex": {
+    "metriken": {
+      "woerter": 2818,
+      "saetze": 202,
+      "sent_mean": 14.0,
+      "sent_stdev": 10.0,
+      "kurz_unter_8": 0.14,
+      "dash_per_300w": 0.0,
+      "bold_per_300w": 0.0,
+      "listenzeilen_anteil": 0.0
+    },
+    "muster_treffer": [],
+    "abweichungen": [],
+    "ok": true
+  },
+  "ueb01/README.md": {
+    "metriken": {
+      "woerter": 302,
+      "saetze": 25,
+      "sent_mean": 12.1,
+      "sent_stdev": 6.4,
+      "kurz_unter_8": 0.24,
+      "dash_per_300w": 0.0,
+      "bold_per_300w": 0.0,
+      "listenzeilen_anteil": 0.0
+    },
+    "muster_treffer": [],
+    "abweichungen": [],
+    "ok": true
+  },
+  "README.md": {
+    "metriken": {
+      "woerter": 115,
+      "saetze": 10,
+      "sent_mean": 11.5,
+      "sent_stdev": 8.2,
+      "kurz_unter_8": 0.3,
+      "dash_per_300w": 0.0,
+      "bold_per_300w": 0.0,
+      "listenzeilen_anteil": 0.0
+    },
+    "muster_treffer": [],
+    "abweichungen": [],
+    "ok": true
+  }
+}
