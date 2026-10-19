@@ -1,0 +1,341 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{enumitem,booktabs,array,xcolor,tikz}
+\usetikzlibrary{arrows.meta,positioning,trees}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{3em}
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newcommand{\aufgabe}[1]{\section*{Aufgabe #1}}
+\newcommand{\angabe}[1]{\textit{#1}\par\smallskip}
+\newcommand{\why}[1]{\text{\small\color{black!65}#1}}
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,title={Erklärung}}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\begin{document}
+\begin{center}
+{\Large Übungsblatt 02: Anwendungsschicht und Wireshark}\\
+Rechnernetze und Netzwerkprogrammierung, WS 2026/27\\
+Raphael Bleier, Gruppe YY\\
+\ifexplain Erklärung\else Lösung\fi
+\end{center}
+Die Nummerierung folgt der Angabe. Dort fehlt 2.3. Gruppe YY und das Haus in 2.7 sind Platzhalter. Die untersuchten Mitschnitte stammen aus dem Moodle-Kurs, nicht aus einem privaten Heimnetz.
+
+\aufgabe{2.1}
+\angabe{Beschreiben Sie die Architektur des heutigen Internets und seine Zugangsmöglichkeiten.}
+Das Internet verbindet unabhängig betriebene Netze. Endsysteme am Rand stellen Anwendungen bereit oder nutzen sie. Ein Zugangsnetz verbindet diese Geräte mit einem Internetanbieter. Router im Kern leiten Pakete über mehrere Teilnetze zum Ziel weiter. IP stellt dafür einen verbindungslosen Best-Effort-Dienst bereit: Zustellung, Reihenfolge und Verzögerung sind nicht garantiert.
+
+Ein autonomes System (AS) steht unter einer gemeinsamen Routing-Verwaltung. Zwischen AS werden Routen mit BGP ausgetauscht. Beim Transit bezahlt ein Netz für Erreichbarkeit über einen anderen Anbieter. Beim Peering tauschen Netze Verkehr direkt aus, etwa an einem Internet Exchange Point. Peering ist nicht zwingend kostenlos. Große Inhalteanbieter betreiben eigene Netze und verteilte Caches, dadurch muss Verkehr nicht immer über einen zentralen Backbone laufen.
+
+Typische Zugänge sind DSL über Kupfer, Kabelinternet über HFC/DOCSIS und Glasfaser bis zum Gebäude oder Anschluss (FTTB/FTTH). Ethernet und WLAN verbinden Geräte im lokalen Netz mit dem Zugang. LTE/5G, Richtfunk und Satelliten ermöglichen Funkzugänge. WLAN allein ist noch kein Internetanschluss. Bei Glasfaser-PON, Kabel und Funk teilen sich mehrere Teilnehmer Kapazität; erreichbare Datenrate und Latenz hängen auch von Auslastung und Signalqualität ab.
+\explain{Wir trennen drei Aufgaben: Geräte erzeugen Daten, der Zugang bringt sie zum Anbieter und der Kern transportiert sie weiter. Das ist die Rand/Zugang/Kern-Sicht der VO. Ein AS ist dabei eine Verwaltungsgrenze, kein einzelner Router. Ein CDN (Content Delivery Network) hält Kopien von Inhalten näher bei den Nutzern.}
+\[\boxed{\text{Internet: verknüpfte Netze mit Rand, Zugang und paketvermitteltem Kern.}}\]
+
+\aufgabe{2.2}
+\angabe{Beschreiben Sie die sieben ISO/OSI-Schichten, ihre Funktionen sowie vertikale und horizontale Schnittstellen.}
+Von unten nach oben unterscheidet ISO/IEC 7498-1:
+\begin{enumerate}[label=\arabic*.]
+\item Bitübertragung: Überträgt Bits als elektrische, optische oder Funksignale. Definiert etwa Pegel, Modulation und physische Anschlüsse.
+\item Sicherung: Bildet Rahmen, regelt Medienzugriff und erkennt Übertragungsfehler auf einer Verbindung. MAC-Adressen gehören hierher. Fehlerkorrektur oder Wiederholung sind protokollabhängig.
+\item Vermittlung: Adressiert und vermittelt Pakete über Netzgrenzen. Routing bestimmt Wege, Forwarding den nächsten Hop.
+\item Transport: Verbindet Kommunikationsprozesse Ende zu Ende. Je nach Protokoll kommen Segmentierung, Zuverlässigkeit sowie Fluss- und Überlastkontrolle hinzu.
+\item Sitzung: Steuert Dialoge und Sitzungen, etwa Wiederaufsetzpunkte und die Koordination eines Gesprächs.
+\item Darstellung: Vereinbart Datenrepräsentationen und Transformationen, beispielsweise Kodierung, Kompression oder Verschlüsselung.
+\item Anwendung: Stellt Kommunikationsdienste für Anwendungen bereit, etwa Dateiübertragung oder Nachrichtenaustausch. Das ist nicht die gesamte Benutzeroberfläche einer Anwendung.
+\end{enumerate}
+Vertikal nutzt Schicht $n+1$ lokal den Dienst von Schicht $n$ über eine definierte Schnittstelle beziehungsweise einen Service Access Point. Die Dienstbeschreibung legt fest, was angeboten wird; die konkrete API ist die Umsetzung im System. Horizontal regelt ein Protokoll den logischen Austausch zwischen gleichrangigen Instanzen auf verschiedenen Systemen. Diese Verbindung ist logisch: Die tatsächliche Übertragung läuft durch die unteren Schichten und das Medium.
+
+Beim Senden ergänzt eine Schicht Steuerinformationen zu den erhaltenen Nutzdaten, etwa einen Header und bei Ethernet einen Trailer. Beim Empfangen werden diese ausgewertet und entfernt. Router beenden auf dem Weg die jeweilige Link-Verbindung und verarbeiten IP, aber nicht generell die Anwendungskommunikation der Endsysteme.
+\explain{Dienst und Protokoll beantworten verschiedene Fragen: Was bekommt die Schicht darüber? Und welche Regeln verwenden die Partner, um diesen Dienst anzubieten? Die horizontale Linie im Modell ist deshalb kein eigenes Kabel. Die Daten müssen trotzdem nach unten und auf der Gegenseite wieder nach oben.}
+\[\boxed{\text{Vertikal: Dienstnutzung im System; horizontal: Peer-Protokoll.}}\]
+
+\aufgabe{2.4}
+\angabe{Vergleichen Sie TCP/IP mit OSI. Nennen Sie für jede Schicht mehrere Beispielprotokolle.}
+Die VO verwendet eine fünfteilige Darstellung des Internet-Stacks. Im vierteiligen TCP/IP-Modell werden Sicherung und Bitübertragung zur Netzzugangsschicht zusammengefasst. OSI ist ein Referenzmodell, TCP/IP eine tatsächlich eingesetzte Protokollfamilie; ihre Grenzen passen nicht immer exakt aufeinander.
+\begin{description}[style=nextline]
+\item[Anwendung, entsprechend OSI 5--7:] HTTP/1.1, HTTP/2, HTTP/3, DNS, SMTP, POP3, IMAP, FTP, SSH, DHCP, SNMP und NTP. Sitzungs- und Darstellungsaufgaben werden hier oder durch Bibliotheken erledigt. TLS liegt praktisch zwischen Anwendung und Transport, ist aber keine zusätzliche feste TCP/IP-Schicht.
+\item[Transport, OSI 4:] TCP, UDP, SCTP und DCCP. QUIC bietet zuverlässige Streams und Überlastkontrolle über UDP. Seine Transportfunktion ist von seiner UDP-Kapselung zu unterscheiden.
+\item[Netzwerk, OSI 3:] IPv4, IPv6, ICMPv4, ICMPv6 und IGMP. ICMP-Steuerdaten werden in IP transportiert, gehören funktional aber zur Netzwerkschicht.
+\item[Sicherung, OSI 2:] Ethernet-MAC/IEEE 802.3, WLAN-MAC/IEEE 802.11, PPP und IEEE 802.1Q. ARP löst bei IPv4 im lokalen Netz Adressen auf; es liegt an der Grenze zwischen Netzwerk und Link und wird hier dem Netzzugang zugeordnet. IPv6 verwendet dafür Neighbor Discovery über ICMPv6.
+\item[Bitübertragung, OSI 1:] Ethernet-PHY wie 1000BASE-T und 10GBASE-SR sowie die OFDM/OFDMA-PHY von IEEE 802.11. Hier sind konkrete Übertragungsstandards gemeint, nicht Anwendungsprotokolle.
+\end{description}
+\explain{Ein Protokoll wird nach seiner Funktion eingeordnet, nicht bloß danach, worin es verpackt ist. BGP wäre zum Beispiel trotz seiner Routing-Aufgabe ein Anwendungsprotokoll über TCP. Bei ARP und TLS muss man die Modellgrenzen dazusagen. Andernfalls wirkt eine vereinfachte Zeichnung genauer, als sie ist.}
+\[\boxed{\text{TCP/IP-Anwendung fasst die Aufgaben der OSI-Schichten 5--7 zusammen.}}\]
+
+\aufgabe{2.5}
+\angabe{Beschreiben Sie die Transportschicht, TCP und UDP sowie typische Anwendungsprotokolle.}
+Die Transportschicht ordnet eingehende Daten mit Ports dem richtigen Prozess beziehungsweise Socket zu. Sie ermöglicht damit mehrere Kommunikationsbeziehungen auf demselben Rechner. IP adressiert den Rechneranschluss, der Transport die beteiligten Prozesse.
+
+TCP baut eine Verbindung auf und liefert einen zuverlässigen, geordneten Bytestrom. Sequenznummern, Bestätigungen und Wiederholungen behandeln Verlust und Umordnung. Flusskontrolle schützt den Empfänger, Überlastkontrolle berücksichtigt das Netz. Nachrichtenbegrenzungen bleiben Aufgabe der Anwendung. Auch TCP garantiert keine endliche Zustellzeit und kann mit einem Fehler abbrechen. Beispiele sind HTTP/1.1, HTTP/2, SMTP, POP3, IMAP und SSH.
+
+UDP überträgt einzelne Datagramme ohne Verbindungsaufbau. Datagrammgrenzen bleiben erhalten, aber Zustellung, Reihenfolge und Duplikatfreiheit sind nicht garantiert. UDP selbst bietet keine Wiederholung, Flusskontrolle oder Überlastkontrolle. Das muss die Anwendung bei Bedarf ergänzen. Beispiele sind DHCP, häufig DNS, NTP und RTP. DNS verwendet auch TCP. HTTP/3 verwendet QUIC über UDP; dadurch ist HTTP/3 trotz UDP zuverlässig. Keines der beiden Basisprotokolle verschlüsselt automatisch.
+\explain{TCP ähnelt einem geordneten Datenstrom, nicht einer Liste abgeschlossener Nachrichten. Ein einzelnes send muss beim Empfänger nicht einem recv entsprechen. Bei UDP ist die Nachrichtengrenze da, dafür kann ein ganzes Datagramm fehlen. Weniger Mechanismen bedeuten nicht in jedem Anwendungsfall automatisch weniger Verzögerung.}
+\[\boxed{\text{TCP: zuverlässiger Bytestrom; UDP: Datagramme ohne Zustellgarantie.}}\]
+
+\aufgabe{2.6}
+\angabe{Entwerfen Sie ein RFC-artig beschriebenes Bankautomatenprotokoll für Karten-/Kennwortprüfung, Kontostand und Abheben einschließlich fehlender Deckung. Skizzieren Sie eine fehlerfreie Abhebung.}
+\subsection*{ATM/1: Zweck und Begriffe}
+ATM/1 ist ein fiktiver Entwurf, kein veröffentlichter Bankstandard. MUST bedeutet hier eine notwendige Eigenschaft, SHOULD eine begründet abweichbare Empfehlung. Es verbindet einen vertrauenswürdigen Automaten mit dem Banksystem. Ein Betrag wird als positive ganze Anzahl Cent und mit Währung EUR übertragen; Fließkommazahlen sind nicht zulässig.
+\subsection*{Transport und Nachrichtenformat}
+Die Verbindung MUST TLS mit beidseitiger Zertifikatsprüfung verwenden. Eine Nachricht besteht aus einer vier Byte langen vorzeichenlosen Big-Endian-Länge und genau so vielen UTF-8-Bytes eines JSON-Objekts. Die Länge MUST höchstens 4096 Byte betragen. Der Empfänger MUST Header und Inhalt vollständig einlesen, bevor er JSON verarbeitet. Doppelte JSON-Schlüssel und unbekannte Nachrichtentypen werden abgewiesen.
+
+Jede Anfrage enthält \texttt{v}, \texttt{type} und eine eindeutige \texttt{request\_id}; nach Anmeldung zusätzlich \texttt{session}. Jede Antwort wiederholt die Anfragekennung und enthält \texttt{status}. \texttt{v} MUST den Wert 1 haben. Eine Sitzungskennung ist kurzlebig, zufällig und an das authentifizierte Gerät gebunden.
+\subsection*{Nachrichten und Zustände}
+\begin{description}[style=nextline]
+\item[AUTH:] Felder \texttt{card\_token}, \texttt{pin\_block}. Die Karte wird über eine opaque Kennung identifiziert. Der PIN-Block wird im gesicherten PIN-Pad erzeugt und vom Bank-HSM geprüft; ein Kartenbesitznachweis gehört zur Kartenprüfung. Eine PIN darf weder im Klartextfeld noch im Log stehen. Antwort: \texttt{OK} mit Sitzung oder \texttt{AUTH\_FAILED}/\texttt{CARD\_BLOCKED}. Fehlversuche werden begrenzt.
+\item[BALANCE:] Liefert den verfügbaren Betrag in Cent und die Währung. Nur im authentifizierten Zustand erlaubt. \texttt{SESSION\_EXPIRED} beendet die Sitzung.
+\item[WITHDRAW\_PREPARE:] Felder \texttt{transaction\_id}, \texttt{amount\_cents}, \texttt{currency}. Bank und Automat prüfen Limit, gültigen Betrag und Auszahlbarkeit; die Bank prüft die verfügbare Deckung atomar mit einer Reservierung. Antwort \texttt{RESERVED}, \texttt{INSUFFICIENT\_FUNDS}, \texttt{LIMIT\_EXCEEDED} oder \texttt{INVALID\_AMOUNT}. Bei Ablehnung wird kein Bargeld ausgegeben und nichts belastet.
+\item[WITHDRAW\_COMMIT:] Nach bestätigter Bargeldausgabe meldet der Automat dieselbe Transaktionskennung und das Ausgaberesultat. Die Bank verbucht die Reservierung genau einmal und antwortet \texttt{COMMITTED} mit dem neuen verfügbaren Betrag.
+\item[WITHDRAW\_CANCEL:] Vor der Ausgabe oder nach eindeutig bestätigter Nichtausgabe wird die Reservierung freigegeben. Bereits verbuchte Transaktionen dürfen nicht dadurch rückgängig gemacht werden.
+\item[STATUS:] Liefert für dieselbe Transaktionskennung \texttt{RESERVED}, \texttt{COMMITTED}, \texttt{CANCELLED} oder \texttt{UNKNOWN}. Der Automat fragt damit nach einem Verbindungsabbruch nach.
+\item[LOGOUT:] Invalidiert die Sitzung. Die Karte wird zurückgegeben, sofern keine Sperrregel greift.
+\end{description}
+\explain{Reservieren verhindert, dass zwei Automaten denselben verfügbaren Betrag gleichzeitig ausgeben. Die eigentliche Bargeldausgabe ist aber kein Datenbankbefehl. Deshalb braucht der Ablauf einen dauerhaften Gerätezustand und eine Klärung bei einem Abbruch.}
+\subsection*{Wiederholungen und Fehlerfälle}
+Die Bank MUST die Transaktionskennung zusammen mit Betrag, Währung und Gerät dauerhaft speichern. Eine wiederholte Anfrage mit denselben Daten liefert den gespeicherten Zustand. Dieselbe Kennung mit anderem Betrag wird als Konflikt zurückgewiesen. Der Automat MUST vor dem Ausgeben einen dauerhaften Journaleintrag schreiben und darf nach einem Timeout nicht einfach erneut Bargeld ausgeben.
+
+Bei unklarem Ausgaberesultat geht die Transaktion in manuelle oder gerätegestützte Klärung. Eine Reservierung wird dann nicht blind freigegeben. Bei sicherer Nichtausgabe kann sie storniert werden. Geht nur die Commit-Antwort verloren, liefert STATUS den bereits verbuchten Zustand. TLS schützt den Kanal, ersetzt diese Regeln aber nicht.
+\subsection*{Fehlerfreier Beispielablauf}
+Es werden 5000 Cent abgehoben; anfangs sind 10000 Cent verfügbar.
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}[>=Stealth,x=1cm,y=0.76cm,font=\small]
+\node (a) at (0,0) {Automat};\node (b) at (11,0) {Bank};
+\draw[dashed] (0,-0.3)--(0,-10.8);\draw[dashed] (11,-0.3)--(11,-10.8);
+\draw[->] (0,-1)--node[above]{TLS, Geräteauthentisierung}(11,-1);
+\draw[->] (0,-2)--node[above]{AUTH(Kartentoken, PIN-Block)}(11,-2);
+\draw[<-] (0,-3)--node[above]{OK, Sitzung S}(11,-3);
+\draw[->] (0,-4)--node[above]{BALANCE(S)}(11,-4);
+\draw[<-] (0,-5)--node[above]{OK, 10000 Cent verfügbar}(11,-5);
+\draw[->] (0,-6)--node[above]{WITHDRAW\_PREPARE(S,T,5000,EUR)}(11,-6);
+\draw[<-] (0,-7)--node[above]{RESERVED(T)}(11,-7);
+\node[anchor=west,fill=white] at (0,-7.6) {Journal, dann 50 EUR ausgeben};
+\draw[->] (0,-8.6)--node[above]{WITHDRAW\_COMMIT(S,T,ausgegeben)}(11,-8.6);
+\draw[<-] (0,-9.6)--node[above]{COMMITTED(T), 5000 Cent verfügbar}(11,-9.6);
+\draw[->] (0,-10.6)--node[above]{LOGOUT(S)}(11,-10.6);
+\end{tikzpicture}
+\end{center}
+\explain{Das Diagramm zeigt die Nachrichten zwischen zwei Teilnehmern. Die Bargeldausgabe passiert lokal und wird deshalb als Aktion beim Automaten eingezeichnet. Die Transaktionskennung T bleibt bei Vorbereitung, Verbuchung und einer möglichen Statusabfrage gleich.}
+\begin{align*}
+B_{\mathrm{neu}}&=B_{\mathrm{alt}}-A &&\why{erfolgreiche Abhebung}\\
+B_{\mathrm{neu}}&=10000-5000 &&\why{Beispielwerte in Cent einsetzen}\\
+B_{\mathrm{neu}}&=5000 &&\why{Subtraktion}
+\end{align*}
+Probe:
+\begin{align*}
+B_{\mathrm{neu}}+A&=5000+5000 &&\why{neuen Bestand und Auszahlung einsetzen}\\
+&=10000 &&\why{Addition, entspricht dem alten Bestand}
+\end{align*}
+\[\boxed{\text{Auszahlung erst nach Reservierung; Wiederholung über dieselbe Kennung.}}\]
+
+\aufgabe{2.7}
+\angabe{Entwerfen Sie ein Heimnetz mit IEEE 802.11 und nennen Sie Produktmodelle samt Kosten.}
+Ich plane ein fiktives Haus mit Erdgeschoss und Obergeschoss. Ein Internetanschluss mit Ethernet-Übergabe, eine LAN-Leitung zwischen den Stockwerken und die Endgeräte sind vorhanden. Damit werden keine tatsächlichen Wohnverhältnisse vorausgesetzt.
+
+Im Erdgeschoss arbeitet ein TP-Link Archer AX55 als Router und WLAN-Access-Point. Im Obergeschoss verwende ich einen TP-Link RE705X im Access-Point-Modus am Ethernet-Kabel. Beide unterstützen IEEE 802.11ax (Wi-Fi 6) auf 2,4 und 5 GHz. Der kabelgebundene Uplink vermeidet, dass der Verkehr zwischen den Stockwerken nochmals über denselben Funkkanal muss. Ein Mesh-Modus ist dafür nicht notwendig. DHCP läuft nur auf dem Router, der zweite Access Point arbeitet als Bridge.
+
+Die Geräte stehen möglichst zentral und frei, nicht im geschlossenen Schaltschrank. Auf 2,4 GHz verwende ich schmale, nicht überlappende Kanäle nach einer Belegungsprüfung; auf 5 GHz ebenfalls unterschiedliche zulässige Kanäle. WPA3-Personal wird aktiviert, soweit alle Endgeräte es unterstützen; sonst ein begründeter WPA2-AES-Kompatibilitätsbetrieb. WPS wird nach Einrichtung deaktiviert, Firmware aktualisiert und der Administrationszugang geschützt. Ein Gastnetz wird nur mit tatsächlich geprüfter Isolation eingeschaltet. Reale Abdeckung und Durchsatz müssen vor Ort gemessen werden; AX3000 ist eine aggregierte PHY-Klasse und keine garantierte Anwendungsdatenrate.
+
+Preisbeispiele, Recherche am 19.10.2026: Archer AX55 65,46 EUR (ein konkret angezeigtes Geizhals-Angebot), RE705X ab 78,50 EUR laut Preisvergleich. Beim RE705X sind einzelne Händlerstände älter; Verfügbarkeit und endgültiger Warenkorbpreis sind vor Kauf erneut zu prüfen. Versand, Anschlussgebühr und vorhandene Verkabelung sind nicht eingerechnet.
+\begin{align*}
+K&=K_{\mathrm{Router}}+K_{\mathrm{AP}} &&\why{je ein Gerät}\\
+K&=65{,}46+78{,}50 &&\why{Preisbeispiele einsetzen}\\
+K&=143{,}96\,\mathrm{EUR} &&\why{Addition}
+\end{align*}
+Probe:
+\begin{align*}
+K-K_{\mathrm{AP}}&=143{,}96-78{,}50 &&\why{Gesamtkosten und AP einsetzen}\\
+&=65{,}46\,\mathrm{EUR} &&\why{entspricht dem Routerpreis}
+\end{align*}
+\explain{Der RE705X wird als Access Point betrieben, nicht als Funk-Repeater. Das ist ein wichtiger Unterschied: Ein Repeater muss die Daten über Funk weiterreichen, ein verkabelter Access Point bekommt sie über Ethernet. Der Ansatz setzt die ausdrücklich angenommene LAN-Leitung voraus.}
+\[\boxed{\text{Router und verkabelter Wi-Fi-6-AP: Preisbeispiel 143,96 EUR ohne Versand.}}\]
+
+\aufgabe{2.8}
+\angabe{Was ist Streaming gespeicherter Videos? Nennen Sie bekannte Websites und recherchieren Sie die Funktionsweise.}
+Bei Video-on-Demand ist das Video bereits gespeichert. Die Wiedergabe beginnt, bevor alle Daten heruntergeladen sind. Ein Puffer gleicht schwankende Übertragungsraten aus. Anders als bei Live-Streaming muss die Wiedergabe nicht dem aktuellen Aufnahmezeitpunkt folgen; der Nutzer kann in gespeicherte Abschnitte springen.
+
+Bei adaptivem HTTP-Streaming wird ein Video in mehreren Qualitätsstufen kodiert und in Segmente zerlegt. Zuerst lädt der Player ein Manifest: bei HLS eine Playlist, bei MPEG-DASH eine MPD. Danach fordert er passende Segmente über HTTP(S) an. Die Auswahl berücksichtigt gemessenen Durchsatz, Pufferstand und Geräteeigenschaften. Bei wenig verfügbarer Bandbreite wählt der Player eine kleinere Darstellung. CDN-Caches halten oft abgerufene Segmente nahe am Nutzer; HTTP-Caching und Range-Anfragen können die Übertragung unterstützen. Codecs komprimieren das Video, während gegebenenfalls DRM den Zugriff kontrolliert. Transport, Kodierung und Rechteverwaltung sind verschiedene Aufgaben.
+
+Beispiele sind YouTube, Netflix und Apple TV+. Nicht jeder Client verwendet dieselbe Kombination von Codec, Manifest und HTTP-Version. Als konkret nachgelesene Verfahren beschreibt RFC 8216 HLS mit Varianten und Segmenten; Apple dokumentiert HLS für Live- und On-Demand-Angebote. Netflix beschreibt bei Open Connect direkt bei Internetanbietern oder an Austauschpunkten angebundene Inhaltsserver. Das belegt die CDN-Seite, aber nicht ein einziges festes Transportformat aller Netflix-Clients.
+\explain{Der Player entscheidet wiederholt, welches Segment als Nächstes sinnvoll ist. Die Videoqualität kann daher während der Wiedergabe wechseln. Ein schneller Start und ein ausreichend gefüllter Puffer sind unterschiedliche Ziele: Erst wenig laden startet schnell, mehr Vorrat hilft später gegen Unterbrechungen.}
+\[\boxed{\text{On-Demand-Streaming: früh starten, puffern und Qualität an das Netz anpassen.}}\]
+
+\aufgabe{2.9}
+\angabe{Vergleichen Sie HTTP/0.9 bis HTTP/3 anhand von RFCs. Beschreiben Sie SMTP, POP3, IMAP und DNS; geben Sie ein SMTP-Beispiel.}
+\subsection*{HTTP-Versionen}
+HTTP/0.9 verwendet eine einfache GET-Anfrage wie \texttt{GET /index.html} und liefert danach den Inhalt ohne Statuszeile und HTTP-Header. Die Verbindung begrenzt die Antwort. Die rückblickende Beschreibung und die Simple-Request/Response-Syntax stehen in RFC 1945.
+
+HTTP/1.0 (RFC 1945) ergänzt eine Versionskennung, Statuscodes, Header und Methoden wie HEAD und POST. Typisch ist eine eigene Verbindung pro Objekt. Keep-Alive wurde als Erweiterung eingesetzt; persistente Verbindungen sind nicht die allgemeine Voreinstellung.
+
+HTTP/1.1 (heutige Syntax RFC 9112, Semantik RFC 9110) verwendet standardmäßig persistente TCP-Verbindungen. Der Host-Header ist Pflicht. Content-Length oder Chunked Transfer Coding können Nachrichten begrenzen. Pipelining ist möglich, die Antworten müssen dabei in Anfragereihenfolge kommen. Das kann auf Anwendungsebene blockieren.
+
+HTTP/2 (RFC 9113) verwendet binäre Frames und mehrere Streams in einer TCP-Verbindung. HPACK komprimiert Header. Antworten verschiedener Streams können verschachtelt übertragen werden; TCP muss aber trotzdem seinen gesamten Bytestrom geordnet liefern. Ein verlorenes TCP-Segment kann deshalb auch andere HTTP/2-Streams verzögern. Server Push ist im Protokoll vorgesehen, wird aber nicht von jedem heutigen Client genutzt.
+
+HTTP/3 (RFC 9114) bildet HTTP auf QUIC (RFC 9000) über UDP ab. QUIC integriert TLS 1.3 und liefert zuverlässige, voneinander geordnete Streams. Ein Paketverlust erzwingt damit nicht die TCP-weite geordnete Freigabe fremder Streams. Gemeinsame Überlastkontrolle und Abhängigkeiten der QPACK-Headerkompression können weiterhin verzögern. HTTP/3 verwendet QPACK statt HPACK und unterstützt einen schnellen Verbindungsaufbau; 0-RTT ist nicht für jede Anfrage sicher, weil Wiederholungen möglich sind. Methoden, Statuscodes und grundlegende Semantik bleiben versionsübergreifend erhalten.
+\explain{Multiplexing heißt: Mehrere logische Gespräche teilen sich eine Verbindung. HTTP/2 löst dabei die Reihenfolge der HTTP-Antworten von einem einzigen Antwortstrom. Die darunterliegende TCP-Reihenfolge bleibt jedoch bestehen. QUIC kann Nutzdaten eines anderen Streams freigeben, obwohl in einem Stream noch etwas fehlt.}
+\subsection*{E-Mail}
+SMTP nach RFC 5321 transportiert E-Mails zwischen Mail-Systemen; Submission ist ein eigener Anwendungsfall. Der SMTP-Umschlag enthält Absender und Empfänger, der DATA-Inhalt die eigentliche Nachricht. Diese Adressen müssen nicht mit sichtbaren From-/To-Headern identisch sein. Für echte Anmeldung und vertrauliche Übertragung braucht es geeignete Authentisierung und TLS.
+
+Das folgende Beispiel ist konstruiert, kein behaupteter Servermitschnitt. C bezeichnet den Client, S den Server; jede Protokollzeile endet mit CRLF. Der Einzelpunkt beendet DATA, ein mit Punkt beginnender Inhalt wird durch Dot-Stuffing geschützt.
+\begin{lstlisting}
+S: 220 mail.example.test ESMTP
+C: EHLO client.example.test
+S: 250 mail.example.test
+C: MAIL FROM:<alice@example.test>
+S: 250 OK
+C: RCPT TO:<bob@example.test>
+S: 250 OK
+C: DATA
+S: 354 End data with <CRLF>.<CRLF>
+C: From: alice@example.test
+C: To: bob@example.test
+C: Date: Mon, 19 Oct 2026 12:00:00 +0200
+C: Subject: Test
+C:
+C: Hallo Bob.
+C: .
+S: 250 Message accepted
+C: QUIT
+S: 221 Bye
+\end{lstlisting}
+POP3 (RFC 1939) dient dem Abruf einer Mailbox: Nach der Begrüßung folgt AUTHORIZATION, nach erfolgreicher Anmeldung TRANSACTION und bei QUIT schließlich UPDATE. USER/PASS sind eine mögliche Anmeldung, STAT und LIST liefern Übersicht, RETR holt eine Nachricht. DELE markiert sie, erst UPDATE löscht sie endgültig. Beim Verbindungsabbruch ohne QUIT wird nicht einfach gelöscht. Eine mehrzeilige Antwort endet mit einer Punktzeile; Dot-Stuffing unterscheidet Inhalt davon. Ohne zusätzlichen TLS-Schutz sind Kennwort und Inhalte nicht vertraulich. Das Liegenlassen von Nachrichten ist möglich; POP3 bedeutet nicht zwingend sofortiges Löschen.
+
+IMAP4rev2 (RFC 9051) verwaltet Nachrichten serverseitig mit Ordnern, Flags, Suche und selektivem Abruf. Dadurch lassen sich mehrere Geräte besser synchronisieren. Befehle sind getaggt; neben der zugeordneten Abschlussantwort kann der Server ungetaggte Daten liefern. POP3 ist einfacher auf den Mailboxabruf ausgelegt, IMAP auf dauerhafte serverseitige Verwaltung. Auch IMAP braucht TLS für Vertraulichkeit.
+\subsection*{DNS}
+DNS (RFC 1034/1035) ist eine hierarchische, verteilte Datenbank. Ein Stub-Resolver fragt normalerweise einen rekursiven Resolver. Dieser beantwortet aus dem Cache oder verfolgt Delegationen von Root über TLD zu autoritativen Servern. Autoritative Antworten stammen aus den zuständigen Zonen; ein rekursiver Resolver muss nicht selbst für die abgefragte Zone autoritativ sein.
+
+A/AAAA liefern Adressen, MX Mail-Zuständigkeit, NS Nameserver, CNAME Aliasnamen und PTR Rückwärtszuordnung. TTL begrenzt die Cache-Nutzungsdauer. Anfragen nennen Namen, Typ und Klasse. DNS nutzt Port 53 über UDP und TCP; eine abgeschnittene UDP-Antwort kann einen TCP-Neuversuch auslösen. TCP ist nicht auf Zonentransfers beschränkt. DNSSEC kann Herkunft und Unverändertheit signierter Daten prüfen, verschlüsselt aber nicht die Anfrage. Verschlüsselte Resolvertransporte wie DoT und DoH sind davon zu unterscheiden.
+\explain{SMTP schickt eine Nachricht zur nächsten zuständigen Stelle. POP3 und IMAP holen beziehungsweise verwalten bereits gespeicherte Nachrichten. DNS hilft unter anderem dabei, den zuständigen Mailserver zu finden: MX ist deshalb kein Mailübertragungsprotokoll, sondern ein DNS-Datensatz.}
+\[\boxed{\text{HTTP: Web; SMTP: Übertragung; POP3/IMAP: Abruf/Verwaltung; DNS: Namensdaten.}}\]
+
+\aufgabe{2.10}
+\angabe{Installieren Sie Wireshark, untersuchen Sie dump\_protocols.pcap, beschreiben Sie Ansichten und Filter. Zeichnen Sie eigenen Verkehr auf. Wozu dient Promiscuous Mode?}
+Wireshark und TShark 4.4.5 wurden installiert. Der Protokollmitschnitt wurde in der grafischen Oberfläche geöffnet und mit dem Display-Filter \texttt{http} betrachtet. Die Statusleiste zeigt 39 Pakete insgesamt und zwei angezeigte HTTP-Pakete, Nummer 26 (GET) und 36 (Antwort 200 OK). Paketliste, Protokolldetails und Rohbytes waren dabei sichtbar. Die numerische Auswertung verwendet zusätzlich TShark und einen eigenen Parser.
+
+Die Paketliste zeigt pro Frame Zeit, Endpunkte, Protokoll, Länge und eine Kurzbeschreibung. Der Paketdetailbereich zerlegt den markierten Frame in Protokollfelder. Der Bytebereich zeigt die zugehörigen Rohbytes als Hexadezimalwerte und Text. Die Protokollhierarchie zählt Kapselungen; Conversations gruppiert Kommunikationsbeziehungen. Bei dump\_protocols wurden tatsächlich 39 Ethernet-Frames gelesen.
+
+Ein Capture-Filter wie \texttt{tcp port 80} verwendet die Capture/BPF-Syntax und entscheidet vor dem Speichern. Ein Display-Filter wie \texttt{http.request}, \texttt{tcp.port == 80} oder \texttt{tcp.stream eq 0} blendet bereits gespeicherte Frames aus, löscht sie aber nicht. Display- und Capture-Filter sind nicht austauschbar. \texttt{http} zeigt insbesondere nicht automatisch jedes TCP-Segment einer großen HTTP-Antwort, weil die HTTP-Zerlegung erst nach Reassemblierung vollständig sein kann.
+
+Für eine eigene Aufzeichnung habe ich ausschließlich selbst erzeugte UDP-Testdatagramme auf der Loopback-Schnittstelle erfasst. Der Empfänger wurde zuerst lokal gebunden. Danach wurde tcpdump mit einem Filter auf dessen UDP-Port gestartet; erst nach der Bereitschaftsmeldung wurden drei Nachrichten mit je zwölf Nutzdatenbytes gesendet und empfangen. Die Aufzeichnung wurde sauber beendet und mit TShark eingelesen. Ergebnis: drei UDP-Datagramme, jeweils UDP-Länge 20 Byte einschließlich des acht Byte langen UDP-Headers. Der Mitschnitt enthält keinen fremden Netzwerkverkehr. Bei einer eigenen GUI-Aufzeichnung wählt man entsprechend die richtige Schnittstelle, setzt den Capture-Filter, startet die Aufnahme, erzeugt Testverkehr und stoppt sowie speichert die Aufnahme.
+
+Promiscuous Mode lässt eine Netzwerkkarte auch empfangene Frames an das Betriebssystem weitergeben, deren Ziel-MAC nicht die eigene ist. Ein Switch leitet fremden Unicast dadurch nicht automatisch an diesen Port. Für dessen Sichtbarkeit braucht es etwa einen Mirror-Port. Bei WLAN ist Promiscuous Mode außerdem nicht mit Monitor Mode gleichzusetzen. Auf Loopback spielt das Filtern nach einer physischen Ziel-MAC keine Rolle.
+\explain{Ein Display-Filter wirkt wie eine Ansicht auf vorhandene Daten. Wenn der Capture-Filter ein Paket gar nicht gespeichert hat, kann ein späterer Display-Filter es nicht zurückholen. Die eigene Aufzeichnung wurde deshalb absichtlich eng begrenzt. TShark überprüft den tatsächlichen Mitschnitt; die GUI zeigt ergänzend, welche Felder zu den beiden HTTP-Nachrichten gehören.}
+\begin{align*}
+L_{\mathrm{UDP}}&=L_{\mathrm{Header}}+L_{\mathrm{Daten}} &&\why{Aufbau des UDP-Datagramms}\\
+L_{\mathrm{UDP}}&=8+12 &&\why{Headerlänge und gemessene Nutzdaten einsetzen}\\
+L_{\mathrm{UDP}}&=20\,\mathrm{Byte} &&\why{Addition}
+\end{align*}
+Probe: Das UDP-Längenfeld aller drei aufgezeichneten Pakete wurde unabhängig mit TShark gelesen und beträgt jeweils 20 Byte.
+\[\boxed{\text{GUI-Filter: 2 von 39 Paketen; eigene Aufnahme: 3 UDP-Testpakete.}}\]
+
+\aufgabe{2.11}
+\angabe{Welche Protokolle enthält dump\_protocols.pcap? Ordnen Sie sie TCP/IP-Schichten zu und zeichnen Sie ihre Hierarchie.}
+Der Mitschnitt enthält Ethernet als Sicherung, IPv4 und ICMP als Netzwerkfunktionen, TCP und UDP als Transport sowie DHCP, DNS und HTTP als Anwendung. ARP ist dem lokalen Netzzugang zugeordnet. Die Aufzeichnung zeigt keine Bitübertragungssignale. HTML beziehungsweise textbasierte Nutzdaten sind keine weitere eigenständige Netzwerkschicht.
+
+Gezählt wurden 39 Ethernet-Frames. Zehn enthalten ARP, 29 IPv4. Von den IPv4-Frames enthalten vier ICMP, neun UDP und 16 TCP. Die UDP-Frames teilen sich in drei DHCP- und sechs DNS-Frames. Über TCP wird ein HTTP-Dialog transportiert. Das sind geschachtelte Zählungen: Ein DNS-Frame zählt zugleich bei Ethernet, IPv4 und UDP.
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}[>=Stealth,every node/.style={draw,rounded corners,align=center,font=\small}]
+\node (eth) at (0,0) {Ethernet (39)\\Sicherung};
+\node (arp) at (-4,-1.4) {ARP (10)\\Netzzugang};
+\node (ip) at (1,-1.4) {IPv4 (29)\\Netzwerk};
+\node (icmp) at (-2,-2.8) {ICMP (4)\\Netzwerk};
+\node (udp) at (1,-2.8) {UDP (9)\\Transport};
+\node (tcp) at (4,-2.8) {TCP (16)\\Transport};
+\node (dhcp) at (-0.4,-4.2) {DHCP (3)\\Anwendung};
+\node (dns) at (2,-4.2) {DNS (6)\\Anwendung};
+\node (http) at (4.5,-4.2) {HTTP\\Anwendung};
+\draw[->] (eth)--(arp);\draw[->] (eth)--(ip);
+\draw[->] (ip)--(icmp);\draw[->] (ip)--(udp);\draw[->] (ip)--(tcp);
+\draw[->] (udp)--(dhcp);\draw[->] (udp)--(dns);\draw[->] (tcp)--(http);
+\end{tikzpicture}
+\end{center}
+\explain{Die Grafik zeigt die Kapselung, nicht sieben zusätzliche Schichten. ICMP steht direkt unter IP, gehört funktional aber zur Netzwerkschicht. ARP läuft direkt über Ethernet und nicht über IP. Die Zahl 16 bei TCP bedeutet nicht 16 HTTP-Nachrichten: Aufbau, Bestätigungen und Abbau zählen ebenfalls als TCP-Frames.}
+Probe der disjunkten Zweige:
+\begin{align*}
+N_{\mathrm{Ethernet}}&=10+29 &&\why{ARP plus IPv4}\\
+&=39 &&\why{Addition}\\
+N_{\mathrm{IPv4}}&=4+9+16 &&\why{ICMP plus UDP plus TCP}\\
+&=13+16 &&\why{erste Addition}\\
+&=29 &&\why{zweite Addition}\\
+N_{\mathrm{UDP}}&=3+6 &&\why{DHCP plus DNS}\\
+&=9 &&\why{Addition}
+\end{align*}
+\[\boxed{\text{Ethernet, ARP, IPv4, ICMP, UDP, TCP, DHCP, DNS und HTTP.}}\]
+
+\aufgabe{2.12}
+\angabe{Analysieren Sie dump\_http.pcap: Objekte, Header, TCP-Verbindungsanzahl im Vergleich zu dump\_protocols.pcap sowie Bytes und Dauer jeder Verbindung.}
+\subsection*{Objekte und Verbindungen}
+Es werden drei Objekte mit GET angefordert: \texttt{/test/} (HTML-Dokument, 145 Byte Inhalt), \texttt{/test/logo.gif} (4445 Byte) und \texttt{/test/TechnikErleben.png} (27065 Byte). Die HTML-Seite referenziert die beiden Bilder. Die Requests sind HTTP/1.0, die Statuszeilen der Antworten HTTP/1.1 200 OK. Das allein bedeutet noch keine persistente Nutzung: Die Antworten enthalten hier \texttt{Connection: close}.
+
+Jedes Objekt verwendet eine eigene TCP-Verbindung zum Serverport 80. Es gibt drei anfängliche SYN-Pakete ohne ACK, drei vollständige Handshakes und drei geschlossene Verbindungen. Clientports sind 37184, 37185 und 37186. Die Endpunktadressen sind für die Ergebnistabelle nicht erforderlich und werden weggelassen.
+\subsection*{Header}
+\begin{description}[style=nextline]
+\item[User-Agent:] Kennung der anfragenden Software. Das ist eine Selbstauskunft, kein verlässlicher Identitätsnachweis.
+\item[Accept:] Akzeptierte Medientypen, hier \texttt{*/*}.
+\item[Host:] Zielautorität für die Auswahl des virtuellen Hosts. Auch diese HTTP/1.0-Requests senden das Feld; für HTTP/1.1 ist es verpflichtend.
+\item[Date:] Erzeugungszeitpunkt der Antwort.
+\item[Server:] Selbstauskunft zur Serversoftware.
+\item[Last-Modified:] Änderungszeitpunkt der Repräsentation, verwendbar für bedingte Anfragen.
+\item[ETag:] Kennung einer Repräsentationsversion, etwa für Cache-Validierung. Sie ist nicht zwingend ein kryptografischer Hash.
+\item[Accept-Ranges: bytes:] Unterstützte Bereichsanfragen in Byte-Einheiten. Das Feld sagt nicht, dass in diesem Mitschnitt tatsächlich ein Teilbereich angefordert wurde.
+\item[Content-Length:] Länge des Nachrichteninhalts in Byte, ohne HTTP-Header und ohne TCP/IP-/Ethernet-Overhead.
+\item[Vary: Accept-Encoding:] Die Auswahl der Antwort kann von Accept-Encoding abhängen; Caches müssen das berücksichtigen. Das Feld ist bei der HTML-Antwort vorhanden und belegt allein noch keine komprimierte Antwort.
+\item[Connection: close:] Die Verbindung wird nach der Antwort geschlossen; dieses Feld gilt für die unmittelbare Verbindung.
+\item[Content-Type:] Medientyp: text/html, image/gif oder image/png.
+\item[X-Pad: avoid browser bug:] Historisches, nicht standardisiertes Kompatibilitätsfeld bei den Bildantworten. Es ist kein zusätzlicher Dateiinhalt und hat keine allgemein verbindliche HTTP-Semantik.
+\end{description}
+Die standardisierten Bedeutungen folgen RFC 9110 und RFC 9112; für das historische Verhalten wurde RFC 1945 herangezogen.
+\explain{Content-Length ist die Dateiinhaltslänge, nicht das gesamte übertragene Datenvolumen. Ein Bild kann mehrere TCP-Segmente belegen, und eine Verbindung enthält auch reine Bestätigungen. Deshalb braucht die Frage nach den Bytes eine genaue Zählweise.}
+\subsection*{Messdefinition und Ergebnisse}
+Die Dauer ist jeweils der Zeitstempel des letzten minus des ersten aufgezeichneten Frames dieser Verbindung, einschließlich Aufbau und Abbau. Framebytes sind die Summe von \texttt{frame.len} in beiden Richtungen einschließlich aufgezeichnetem Ethernet-Header. Nicht aufgezeichnete Präambel, Interframe Gap oder FCS werden nicht hinzugerechnet. TCP-Nutzdaten enthalten hier HTTP-Header und Inhalt. Mitschnittdateigröße und Framebytes sind verschieden, weil PCAP eigene Dateikopf- und Datensatzheader speichert.
+
+\begin{center}\small
+\begin{tabular}{rrrrr}
+\toprule
+Clientport & Frames & Framebytes & TCP-Nutzdaten & Dauer (s)\\
+\midrule
+37184 & 10 & 1236 & 560 & 0,301299\\
+37185 & 14 & 5814 & 4874 & 0,301248\\
+37186 & 44 & 30425 & 27505 & 0,502194\\
+\bottomrule
+\end{tabular}
+\end{center}
+Die Werte wurden mit einem eigenen PCAP-Parser über Ethernet-, IPv4- und TCP-Header berechnet und mit TShark-Feldern verglichen. Beide Auswertungen stimmen bei Framezahl, Framebytes, TCP-Nutzdaten und Dauer überein. Die Dauer ist keine reine Serverbearbeitungszeit und die drei Dauern dürfen wegen überlappender Verbindungen nicht als Gesamtladedauer addiert werden.
+\begin{align*}
+B_{\mathrm{gesamt}}&=1236+5814+30425 &&\why{Framebytes der drei Verbindungen}\\
+&=7050+30425 &&\why{erste Addition}\\
+&=37475\,\mathrm{Byte} &&\why{zweite Addition}
+\end{align*}
+Probe: Die unabhängige TShark-Protokollhierarchie weist ebenfalls 68 TCP-/Ethernet-Frames mit insgesamt 37475 Byte aus.
+
+Zum Vergleich enthält \texttt{dump\_protocols.pcap} nur eine TCP-Verbindung mit 16 Frames, 1763 Framebytes und 0,007399 Sekunden Dauer. Daneben laufen dort ARP, ICMP und UDP; diese werden nicht zur TCP-Verbindung gezählt.
+
+Zusätzlich habe ich \texttt{dump\_http\_persistent.pcap} untersucht. Dort laufen dieselben drei Objektabrufe über eine einzige TCP-Verbindung, mit 46 Frames, 36123 Framebytes, 33071 TCP-Nutzdatenbytes und 0,704626 Sekunden Dauer. Das zeigt Wiederverwendung der Verbindung. Es ist wegen anderer Messbedingungen und Request-Header kein isolierter Leistungsbeweis für jeden denkbaren persistenten Abruf.
+\explain{Zum Gruppieren reicht ein Port allein nicht allgemein aus. Die Prüfung verwendet beide Endpunkte samt Ports; bei wiederverwendeten Verbindungen müsste zusätzlich der TCP-Lebenszyklus unterschieden werden. In diesen Dateien gibt es pro Endpunktepaar genau einen vollständigen Aufbau und Abbau. Die tabellierten Clientports dienen nur als kurze Bezeichnungen.}
+\[\boxed{\text{dump\_http: 3 TCP-Verbindungen; dump\_protocols: 1 TCP-Verbindung.}}\]
+
+\section*{Quellen und Kennzeichnung}
+Kursunterlagen: Übungsblatt 02 (beide Seiten), RN-Aufnahme-KH (Schichten, Modalitäten und KI-Kennzeichnung), rn-chapter-1 (Rand/Zugang/Kern, Schichten und Kapselung), ISO/IEC 7498-1:1994. Die drei PCAP-Dateien wurden aus dem Moodle-Ordner PCAP Files gelesen. Originalunterlagen und Mitschnitte werden nicht mitveröffentlicht.
+
+Nachgelesene öffentliche Quellen (Abruf 19.10.2026):
+\begin{itemize}[nosep]
+\item HTTP: \url{https://www.rfc-editor.org/rfc/rfc1945}, \url{https://www.rfc-editor.org/rfc/rfc9110}, \url{https://www.rfc-editor.org/rfc/rfc9112}, \url{https://www.rfc-editor.org/rfc/rfc9113}, \url{https://www.rfc-editor.org/rfc/rfc9114}, QUIC: \url{https://www.rfc-editor.org/rfc/rfc9000}.
+\item Mail/DNS: \url{https://www.rfc-editor.org/rfc/rfc5321}, \url{https://www.rfc-editor.org/rfc/rfc1939}, \url{https://www.rfc-editor.org/rfc/rfc9051}, \url{https://www.rfc-editor.org/rfc/rfc1034}, \url{https://www.rfc-editor.org/rfc/rfc1035}.
+\item Streaming: \url{https://www.rfc-editor.org/rfc/rfc8216}, \url{https://developer.apple.com/streaming/}, \url{https://openconnect.netflix.com/en/}.
+\item Geräte: \url{https://www.tp-link.com/de/home-networking/wifi-router/archer-ax55/}, \url{https://www.tp-link.com/de/home-networking/range-extender/re705x/}.
+\item Preisbeispiele: \url{https://geizhals.at/tp-link-archer-ax55-a2600058.html}, \url{https://geizhals.at/tp-link-re705x-re705x-a2859749.html}.
+\item Bedienung/Filter: \url{https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html}, \url{https://www.wireshark.org/docs/man-pages/tshark.html}.
+\end{itemize}
+Generative KI wurde zur Ausarbeitung und Prüfung verwendet: Hermes Agent v0.21.5 mit OpenAI-Modell \texttt{gpt-6.1-sol}, 19.10.2026. Die Kennzeichnung folgt den Aufnahmefolien der LV. Messwerte stammen aus tatsächlich ausgeführten Auswertungen. Der Protokollmitschnitt wurde auch in Wireshark geöffnet; die eigene lokale Aufzeichnung erfolgte über tcpdump/TShark. Das Bankprotokoll, das Haus und der SMTP-Dialog sind ausdrücklich Entwürfe beziehungsweise Beispiele, keine durchgeführten Bank-, Wohnungs- oder Mailserveraktionen.
+\end{document}
