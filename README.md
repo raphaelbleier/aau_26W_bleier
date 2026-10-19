@@ -14,7 +14,7 @@ Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Kl
 |---|---|---|---|---|
 | Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 3 | Blatt 1 bis 3 gelöst; Blatt 3 mit Lösungs- und Erklär-PDF; Abgabe und Kreuzeln 26.10.2026, 12:00 |
 | Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
-| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 2 | Blatt 1 getestet; Blatt 2 mit Lösungs- und Erklär-PDF, PCAP-Auswertung geprüft; Horvath: Blatt 1 am 20.10., Blatt 2 am 10.11.2026, jeweils 08:00; Gruppennummer offen |
+| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 3 | Blatt 1 bis 3 gelöst; Blatt 3 mit Socket-Code, 21 Tests, Mailclient- und Browser-Screenshots sowie Lösungs- und Erklär-PDF; Abgabe Blatt 3: 17.11.2026, 08:00; Gruppennummer offen |
 
 Logische Programmierung ist in diesem Repo noch nicht enthalten.
 
