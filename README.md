@@ -12,7 +12,7 @@ Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Kl
 
 | Kurs | LV-Nr. | Ordner | Blätter | Status |
 |---|---|---|---|---|
-| Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 2 | laufend (Blatt 1 und 2 gelöst) |
+| Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 3 | Blatt 1 bis 3 gelöst; Blatt 3 mit Lösungs- und Erklär-PDF; Abgabe und Kreuzeln 26.10.2026, 12:00 |
 | Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
 | Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 1 | Blatt 1 getestet; Gruppe Horvath: Abgabe 20.10.2026, 08:00; Gruppennummer offen |
 
