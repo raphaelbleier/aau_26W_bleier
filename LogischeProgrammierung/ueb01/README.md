@@ -12,6 +12,21 @@ Die Lösung enthält die Aufgabenprogramme, vollständige Redukte und die einzel
 
 Als fachliche Grundlage dienen die Kursunterlagen „Notes on positive and normal logic programs“, insbesondere die Definitionen von Modell, Konsequenzmenge und Redukt. Das Originalblatt bleibt in Moodle: https://moodle.aau.at/mod/resource/view.php?id=1509281. Die Notizen sind über die [Kursseite](https://moodle.aau.at/course/view.php?id=47556) zugänglich.
 
+## Clingo-Programme
+
+Die ausführbaren Programme aus 1.1, 1.2 und 1.4 liegen als `.lp`-Dateien im Ordner [`clingo/`](clingo/). Exercise 1.3 verwendet dieselben Programme wie 1.2, dort werden nur alle Answer Sets bestimmt.
+
+Zum Beispiel aus diesem Ordner ausführen:
+
+```sh
+uv run --with clingo python -m clingo clingo/1_1a.lp -n 0
+uv run --with clingo python -m clingo clingo/1_1b.lp -n 0
+uv run --with clingo python -m clingo clingo/1_2a.lp -n 0
+uv run --with clingo python -m clingo clingo/1_2b.lp -n 0
+uv run --with clingo python -m clingo clingo/1_4a.lp -n 0
+uv run --with clingo python -m clingo clingo/1_4b.lp -n 0
+```
+
 Zum Bauen mit einer TeX-Installation mit amsmath, TikZ und tcolorbox:
 
 ```sh
