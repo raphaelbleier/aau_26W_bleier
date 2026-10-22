@@ -1,0 +1,13 @@
+{
+  "source_hash": "5f2624275d1f205926a8748c82451a6efebe8f5f41f58dd3554d00bac021cb81",
+  "source_path": "/root/moodle-crawler/downloads/Logische Programmierung (621.315_ 26W)/Exercise sheet 1/exercise01a.pdf",
+  "source_hash_algorithm": "sha256",
+  "materials": [
+    {
+      "course_lv": "621.315",
+      "path_or_url": "/root/moodle-crawler/downloads/Logische Programmierung (621.315_ 26W)/Notes on positive and normal logic programs/Note_Logic_programming.pdf",
+      "sha256": "c0afe2a2ca4da3bd74ca6b388f194dc784a20db30d762488270570b62fc81c29",
+      "page_or_section": "pp. 1–5: positive rules, models, least model and consequences; pp. 6–11: normal rules, reduct and answer sets"
+    }
+  ]
+}
