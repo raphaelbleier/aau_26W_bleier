@@ -21,7 +21,7 @@
 \newcommand{\at}[1]{\texttt{#1}}
 \begin{document}
 \begin{center}{\Large Exercise sheet 1}\\Logic Programming (621.315), Winter semester 2026\\Raphael Bleier\\Demonstration: 21 October 2026\end{center}
-\explain{Ein Atom ist hier eine einzelne Aussage, etwa $\at{bird(tweety)}$. Ein Modell erfüllt alle Regeln, muss aber nicht die kleinste begründbare Menge sein. Ein Answer Set ist die kleinste abgeschlossene Menge seines eigenen Redukts. Default-Negation \texttt{not a} prüft, ob $a$ im Kandidaten fehlt; sie ist keine zusätzliche Aussage $\neg a$. Wir verwenden die Begriffe und die Notation $\operatorname{Cn}(P)$ aus den Kursnotizen zu positiven und normalen Programmen. Ein Punkt beendet jede Regel. Eine Regel wie \texttt{kopf :- bedingung1, bedingung2.} leitet den Kopf ab, wenn beide Bedingungen gelten. Das Komma bedeutet UND. Fakten wie \texttt{a.} haben keinen Regelkörper. Die Programme liegen zusätzlich als ausführbare \texttt{.lp}-Dateien im Unterordner \texttt{clingo/}. Mit \texttt{-n 0} lässt Clingo alle Answer Sets ausgeben.}
+\explain{Ein Atom ist hier eine einzelne Aussage, etwa $\at{bird(tweety)}$. Ein Modell erfüllt alle Regeln, muss aber nicht die kleinste begründbare Menge sein. Ein Answer Set ist die kleinste abgeschlossene Menge seines eigenen Redukts. Default-Negation \texttt{not a} prüft, ob $a$ im Kandidaten fehlt; sie ist keine zusätzliche Aussage $\neg a$. Wir verwenden die Begriffe und die Notation $\operatorname{Cn}(P)$ aus den Kursnotizen zu positiven und normalen Programmen. Ein Punkt beendet jede Regel. Eine Regel wie \texttt{kopf :- bedingung1, bedingung2.} leitet den Kopf ab, wenn beide Bedingungen gelten. Das Komma bedeutet UND. Fakten wie \texttt{a.} haben keinen Regelkörper. Großgeschriebene Namen wie \texttt{X} sind Variablen. Clingo setzt sie beim Grounding mit passenden Fakten ein; eine Regel kann so mehrere ähnliche Fälle abdecken. Die Programme liegen zusätzlich als ausführbare \texttt{.lp}-Dateien im Unterordner \texttt{clingo/}. Mit \texttt{-n 0} lässt Clingo alle Answer Sets ausgeben.}
 \section*{Quiz}
 \paragraph{1}\angabe{Each positive logic program has at most one model.}
 Take $P=\{a\mathbin{:-}b\}$. Both $\varnothing$ and $\{a,b\}$ satisfy the rule; they are distinct models. $\square$
@@ -120,7 +120,7 @@ happy(tina) :- likes(tina,beef), order(beef).
 happy(tina) :- likes(tina,soup), order(soup).
 \end{verbatim}
 \end{small}
-\explain{Die \texttt{likes}-Fakten beschreiben, was jede Person gern isst. Eine \texttt{order}-Regel feuert erst, wenn beide genannten Personen das Gericht mögen. \texttt{happy(X)} folgt anschließend nur, wenn für eine Speise, die $X$ mag, auch eine Bestellung hergeleitet wurde. Deshalb entstehen Bestellungen für Beef und Suppe, aber nicht für Cake, Duck oder Pork.}
+\explain{Die Aufgabenfassung schreibt Bestellungen und Glücksregeln einzeln aus. In \texttt{clingo/1\_1b.lp} ersetzen zwei Regeln diese Wiederholungen: Eine Bestellung entsteht für eine Speise, die zwei verschiedene Personen mögen; \texttt{happy(X)} folgt für jede Person, die ein bestelltes Gericht mag. Die Fakten bleiben dieselben.}
 \explain{Das Programm enthält keine Default-Negation. Wir beginnen bei der leeren Menge und wenden nur Regeln an, deren Körper bereits erfüllt ist. Fakten starten die Herleitung. Eine positive Schleife ohne diesen Start liefert dagegen keine Atome.}
 \[
 M_0=\varnothing
@@ -640,7 +640,7 @@ flies(tweety) :- ok(tweety), not penguin(tweety).
 flies(tux) :- ok(tux), not penguin(tux).
 \end{verbatim}
 \end{small}
-\explain{Die Fakten legen Tweety als Kanarienvogel und Tux als Pinguin fest. Für jeden Vogel wählen die beiden Regeln mit \texttt{not injured} und \texttt{not ok} genau eine Eigenschaft. Die Flugregel verlangt zusätzlich \texttt{not penguin}; deshalb kann Tux auch dann nicht fliegen, wenn \texttt{ok(tux)} gilt.}
+\explain{Das PDF zeigt diese Regeln ausgeschrieben, damit die Nummern im Beweis passen. In \texttt{clingo/1\_4a.lp} decken Variablen dieselben Fälle kürzer ab: dieselbe Vogelregel, dieselbe Auswahl zwischen \texttt{injured} und \texttt{ok} und dieselbe Flugregel gelten für beide Tiere. Tux fliegt trotzdem nicht, weil \texttt{penguin(tux)} gilt.}
 Both bird atoms follow from the facts. For each bird, at least one of $\at{injured}$ and $\at{ok}$ must hold: if neither held, the reduct would derive both from the bird atom. They cannot both hold, because then both supporting rules would be deleted. Thus each bird has exactly one of these two properties. The choices are independent. Tweety flies precisely when $\at{ok(tweety)}$ is chosen, since $\at{penguin(tweety)}$ has no supporting rule. The rule for Tux flying is always deleted by the penguin fact. The four combinations below exhaust the two independent binary choices. $\square$
 \explain{Zuerst klären wir, welche Kombinationen überhaupt möglich sind. Gegenseitige Default-Negation lässt genau eine der beiden Eigenschaften zu. Eine Regel mit \texttt{not p} und Kopf $p$ kann einen Fall ausschließen, statt einfach $p$ zu einer stabilen Lösung hinzuzufügen. Die Redukt-Proben darunter prüfen jede verbliebene Kombination einzeln.}
 \[
@@ -953,7 +953,7 @@ p :- unlucky(2), not p.
 p :- unlucky(3), not p.
 \end{verbatim}
 \end{small}
-\explain{Die \texttt{num}-Fakten liefern die drei Zahlen. Für jede davon schließen sich \texttt{lucky} und \texttt{unlucky} durch gegenseitige Default-Negation aus. Die drei Regeln für $p$ verwerfen jede Kombination mit einem \texttt{unlucky}: Ohne $p$ würde dann $p$ hergeleitet. Mit $p$ wären seine eigenen Regeln gelöscht, sodass $p$ unbegründet bliebe. Übrig bleibt nur der Fall, in dem alle drei Zahlen \texttt{lucky} sind.}
+\explain{Die PDF schreibt die Fälle für 1, 2 und 3 einzeln aus, damit die Nummern im Beweis passen. In \texttt{clingo/1\_4b.lp} liefern die drei \texttt{num}-Fakten dieselben Zahlen; drei Variablenregeln ersetzen die wiederholten Einzelregeln. \texttt{p} schließt alle Fälle mit einem \texttt{unlucky} aus. Übrig bleibt nur, dass alle drei Zahlen \texttt{lucky} sind.}
 For each number, exactly one of $\at{lucky}$ and $\at{unlucky}$ holds: neither would make both reduct rules fire, while both would delete both supporting rules. Suppose $p\in X$. Every rule with head $p$ is deleted by $p$, so the least reduct model does not contain $p$, a contradiction. Hence $p\notin X$. Each remaining rule for $p$ now forbids its unlucky atom: an unlucky atom would derive $p$ in the reduct. All three numbers must therefore be lucky. There is only one candidate. $\square$
 \explain{Zuerst klären wir, welche Kombinationen überhaupt möglich sind. Gegenseitige Default-Negation lässt genau eine der beiden Eigenschaften zu. Eine Regel mit \texttt{not p} und Kopf $p$ kann einen Fall ausschließen, statt einfach $p$ zu einer stabilen Lösung hinzuzufügen. Die Redukt-Proben darunter prüfen jede verbliebene Kombination einzeln.}
 \[

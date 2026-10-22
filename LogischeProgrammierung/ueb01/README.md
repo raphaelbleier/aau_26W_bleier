@@ -14,7 +14,7 @@ Als fachliche Grundlage dienen die Kursunterlagen „Notes on positive and norma
 
 ## Clingo-Programme
 
-Die ausführbaren Programme aus 1.1, 1.2 und 1.4 liegen als `.lp`-Dateien im Ordner [`clingo/`](clingo/). Exercise 1.3 verwendet dieselben Programme wie 1.2, dort werden nur alle Answer Sets bestimmt.
+Die PDF zeigt die Aufgabenprogramme ausgeschrieben, damit die Regelnummern in den Herleitungen passen. Die ausführbaren `.lp`-Dateien fassen Wiederholungen in 1.1b, 1.4a und 1.4b mit Variablen zusammen; die Answer Sets bleiben gleich. Die Kursangabe zeigt die Verallgemeinerungen für 1.1b bereits als Kommentare. Exercise 1.3 verwendet dieselben Programme wie 1.2, dort werden nur alle Answer Sets bestimmt.
 
 Zum Beispiel aus diesem Ordner ausführen:
 
