@@ -5,7 +5,7 @@
 | Blatt | Thema | Abgabe | Lösung |
 |---|---|---|---|
 | 1.1–1.7 | Python, UTF-8/Bytes, Datei-I/O, Binärnachrichten, Threads, Producer-Consumer | Gruppe Horvath: 20.10.2026, 08:00 | [Code und Erklärung](ueb01/README.md), [PDF-Erklärung](ueb01/erklaerung_blatt01.pdf) |
-| 2.1, 2.2, 2.4–2.12 | Internetarchitektur, Schichten, Protokolle, WLAN, Streaming, Wireshark | Gruppe Horvath: 10.11.2026, 08:00; Alkhateeb-Termin unbestätigt | [Lösung](ueb02/loesung_blatt02.pdf), [Erklärung](ueb02/erklaerung_blatt02.pdf), [Hinweise und Quelle](ueb02/README.md) |
+| 2.1, 2.2, 2.4–2.12 | Internetarchitektur, Schichten, Protokolle, WLAN, Streaming, Wireshark | Gruppe Horvath: 10.11.2026, 08:00; Alkhateeb: 11.11.2026, 11:00 | [Lösung](ueb02/loesung_blatt02.pdf), [Erklärung](ueb02/erklaerung_blatt02.pdf), [Hinweise und Quelle](ueb02/README.md) |
 | 3.1–3.5 | POP3-Client und -Server, HTTP/0.9, HTTP/1.0, Keep-Alive, Threads und Logging | Beide Moodle-Gruppen: 17.11.2026, 08:00 | [Code und Testbericht](ueb03/README.md), [Lösung](ueb03/loesung_blatt03.pdf), [Erklärung](ueb03/erklaerung_blatt03.pdf) |
 
 Die Aufgaben 1.1 bis 1.7 sind vorbereitet und getestet. Die offizielle Abgabe braucht laut Aufnahmefolien den Gruppennamen im Dateinamen (`ueb01-gruppeYY.zip`). Die Moodle-Seite zeigt zwei Gruppen-Abgaben, aber Raphaels Gruppennummer ist noch nicht festgestellt. Deshalb ist kein gruppenspezifisches Archiv erstellt und es wurde nichts auf Moodle eingereicht.

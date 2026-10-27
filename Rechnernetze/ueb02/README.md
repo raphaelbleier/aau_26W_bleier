@@ -44,7 +44,7 @@ Jeden Befehl zweimal ausführen, damit Verweise und Seitenumbrüche feststehen.
 
 ## Abgabe und Annahmen
 
-Für Gruppe Horvath zeigt Moodle am 19.10.2026 den 10.11.2026 um 08:00 Uhr. Die Abgabe für Gruppe Alkhateeb nennt dagegen noch 23.10.2025, 13:00 Uhr. Das ist kein bestätigter Termin für das aktuelle Semester und wurde nicht eigenmächtig geändert. Quellen sind die beiden [Horvath-](https://moodle.aau.at/mod/assign/view.php?id=1489875) und [Alkhateeb-Abgaben](https://moodle.aau.at/mod/assign/view.php?id=1489876).
+Moodle nennt für Gruppe Horvath den 10.11.2026 um 08:00 Uhr. Für Gruppe Alkhateeb steht jetzt der 11.11.2026 um 11:00 Uhr (Stand: 27.10.2026). Der alte Alkhateeb-Termin aus 2025 ist damit ersetzt. Die Termine gelten jeweils nur für die zugehörige Übungsgruppe. Quellen sind die beiden [Horvath-](https://moodle.aau.at/mod/assign/view.php?id=1489875) und [Alkhateeb-Abgaben](https://moodle.aau.at/mod/assign/view.php?id=1489876).
 
 Die Gruppennummer fehlt weiterhin und steht deshalb als `YY` im Dokument. Für ein Abgabearchiv wäre laut Aufnahmefolien `ueb02-gruppeYY.zip` mit der tatsächlichen Nummer zu verwenden. Es wurde nichts auf Moodle eingereicht. Das Haus in 2.7 ist eine ausdrücklich fiktive Planung mit vorhandenem Internetanschluss und LAN-Verkabelung. Preise sind recherchierte Beispiele, keine Kaufzusage. Bankprotokoll und SMTP-Dialog sind Entwürfe, keine behaupteten Praxistransaktionen.
 
