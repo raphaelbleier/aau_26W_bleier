@@ -14,7 +14,7 @@ Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Kl
 |---|---|---|---|---|
 | Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 4 | Blatt 1 bis 4 gelöst; Blatt 4 mit Lösungs-/Erklär-PDF und Python-Dictionary; Abgabe und Kreuzeln 02.11.2026, 12:00 |
 | Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
-| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 4 | Blatt 1 bis 3 gelöst; Blatt 4 Mininet, UDP-Mitschnitt und TCP über den RN-Lab-Router, Abgabe 24.11.2026, 08:00; Blatt 3 mit Socket-Code, 21 Tests, Mailclient- und Browser-Screenshots sowie Lösungs- und Erklär-PDF; Abgabe Blatt 3: 17.11.2026, 08:00; Gruppennummer offen; Blatt 2 Alkhateeb: 11.11.2026, 11:00 |
+| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 5 | Blatt 1 bis 4 gelöst; Blatt 6 IP, Subnetting und Routing mit Mininet, Abgabe Horvath 15.12.2026, 08:00, Alkhateeb 15.12.2026, 10:00; Blatt 4 Mininet, UDP-Mitschnitt und TCP, Abgabe 24.11.2026, 08:00; Blatt 2 Alkhateeb: 11.11.2026, 11:00 |
 | Logische Programmierung | 621.315 | [LogischeProgrammierung](LogischeProgrammierung) | 2 | Exercise sheet 1 und Homework sheet 1 gelöst; je Lösungs- und Erklär-PDF; Vorführung 21.10., Korrektur 28.10.2026 |
 
 ## Struktur
