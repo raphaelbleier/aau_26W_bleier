@@ -11,10 +11,11 @@
 | 6.1–6.7 | IP-Adressen, statische Routen, Subnetting, Dijkstra, Distance-Vector, zweiter Client | Horvath: 15.12.2026, 08:00; Alkhateeb: 15.12.2026, 10:00 | [Lösung](ueb06/loesung_blatt06.pdf), [Erklärung](ueb06/erklaerung_blatt06.pdf), [Topologie](ueb06/topology.py) |
 | 7.1–7.5 | Routingpfad, r3, zwei Pfade, Linkverzögerung, Fehlersuche, CSMA | Beide Moodle-Gruppen: 12.01.2027, 08:00 | [Lösung](ueb07/loesung_blatt07.pdf), [Erklärung](ueb07/erklaerung_blatt07.pdf), [Topologie](ueb07/topology.py) |
 | 8.1–8.5 | Ethernet-Frames, ARP, Switch-Learning, Router zwischen zwei LANs, Schichten | Beide Moodle-Gruppen: 19.01.2027, 08:00 | [Code und Erklärung](ueb08/README.md), [Zwei-LAN-Topologie](ueb08/topology_routed.py), [KI-Kennzeichnung](ueb08/KI_NUTZUNG.md) |
+| 9.1, 9.3–9.6 | Network Forensics, falsches Server-Gateway, ARP, TCP-Rückweg | Horvath: 26.01.2027, 08:00; Alkhateeb zeigt 26.01.2026, 08:00, Jahr nicht geraten | [Messung und Erklärung](ueb09/README.md), [Mitschnitt vorher](ueb09/before-server.pcap), [KI-Kennzeichnung](ueb09/KI_NUTZUNG.md) |
 
 Die Aufgaben 1.1 bis 1.7 sind vorbereitet und getestet. Die offizielle Abgabe braucht laut Aufnahmefolien den Gruppennamen im Dateinamen (`ueb01-gruppeYY.zip`). Die Moodle-Seite zeigt zwei Gruppen-Abgaben, aber Raphaels Gruppennummer ist noch nicht festgestellt. Deshalb ist kein gruppenspezifisches Archiv erstellt und es wurde nichts auf Moodle eingereicht.
 
-Blatt 6, Blatt 7 und Blatt 8 sind mit Gruppe 1 (Raphael Bleier, Devis, Fabio) beschriftet. Welche der beiden Abgaben das ist, habe ich nicht geprüft. Nichts wurde hochgeladen.
+Blatt 6, Blatt 7, Blatt 8 und Blatt 9 sind mit Gruppe 1 (Raphael Bleier, Devis, Fabio) beschriftet. Welche der beiden Abgaben das ist, habe ich nicht geprüft. Nichts wurde hochgeladen.
 
 Blatt 5 hat in Moodle noch die Datei von Übungsblatt 02. Dafür liegt hier keine Lösung.
 
