@@ -1,0 +1,220 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{enumitem,booktabs,array,xcolor,tikz,graphicx}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible,frame=single,framerule=0.3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{3em}
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newcommand{\aufgabe}[1]{\section*{Aufgabe #1}}
+\newcommand{\angabe}[1]{{\raggedright\textit{#1}\par}\smallskip}
+\newcommand{\why}[1]{\text{\small\color{black!65}#1}}
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,title={Erklärung}}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\begin{document}
+\begin{center}
+{\Large Übungsblatt 07: Routing, Topologieänderung und Wireshark}\\
+Rechnernetze und Netzwerkprogrammierung, WS 2026/27\\
+Raphael Bleier, Devis, Fabio, Gruppe 1\\
+\ifexplain Erklärung\else Lösung\fi
+\end{center}
+Gemessen am 30.10.2026 mit Mininet 2.3.0 und Python 3.13.3. \texttt{xterm} fehlt hier, deshalb liefen \texttt{ip}, \texttt{ping} und \texttt{tracepath} in den Namespaces. Der Knoten heißt in der Vorlage \texttt{client}, in der Angabe \texttt{client1}. Nichts wurde auf Moodle hochgeladen.
+
+\explain{Die Vorlage setzt Adressen in \texttt{start\_lab.py}, nicht in \texttt{topology.py}. r3 kommt in der Vorlage nicht vor. Die neuen Adressen stehen deshalb in der \texttt{start\_lab.py} dieses Ordners. Die Zahlen unten sind der Lauf vom 30.10.2026, nicht gerundet aus dem Bauch.}
+
+\aufgabe{7.1}
+\angabe{Vollständigen Pfad eines IP-Pakets von client1 zum Server bestimmen. Für jeden Hop Interface und Next Hop dokumentieren. Welche Routingtabelle wird auf jedem Router verwendet? Welche Entscheidung trifft r1, welche r2? Warum braucht der Client keine Route für jedes Zielgerät?}
+
+Jeder Router hat seine eigene Linux-Tabelle im eigenen Namespace. Eine gemeinsame Labortabelle gibt es nicht. Auf r1, r2 und r3 war \texttt{net.ipv4.ip\_forward} gleich 1.
+
+\texttt{ip route get 10.0.2.2} auf dem Client:
+\begin{lstlisting}
+10.0.2.2 via 10.0.1.1 dev client-eth0 src 10.0.1.2
+\end{lstlisting}
+10.0.2.2 liegt nicht in 10.0.1.0/24. Die Connected-Route greift nicht. Die Default-Route schickt das Paket an 10.0.1.1, Ausgang client-eth0.
+
+\explain{Eine Default-Route ist die Sammelroute für alles, was keine längere passende Route hat. Der Client muss die Serveradresse nicht kennen. Er muss nur wissen, dass sie nicht lokal ist. Deshalb reicht ein Eintrag für alle fremden Ziele.}
+
+Auf r1:
+\begin{lstlisting}
+10.0.2.2 via 10.0.12.2 dev r1-eth1 src 10.0.12.1
+\end{lstlisting}
+r1 nimmt das Paket auf r1-eth0 an. Die längste passende Route ist \texttt{10.0.2.0/24 via 10.0.12.2 dev r1-eth1}. Next Hop ist r2, Ausgang r1-eth1. r1 stellt nicht lokal zu.
+
+Auf r2:
+\begin{lstlisting}
+10.0.2.2 dev r2-eth1 src 10.0.2.1
+\end{lstlisting}
+Kein \texttt{via}. 10.0.2.2 liegt in 10.0.2.0/24, das an r2-eth1 hängt. r2 löst die MAC-Adresse per ARP und stellt an server-eth0 zu.
+
+Rückweg, gemessen mit \texttt{ip route get 10.0.1.2}: Server über \texttt{default via 10.0.2.1 dev server-eth0}, r2 über \texttt{10.0.1.0/24 via 10.0.12.1 dev r2-eth0}, r1 direkt über r1-eth0.
+
+Ping client nach 10.0.2.2, fünf Pakete: 5 empfangen, 0\,\% Verlust, TTL 62. Linux startet bei 64. Zwei Router haben die TTL um 2 gesenkt.
+\begin{lstlisting}
+tracepath -n 10.0.2.2
+ 1: 10.0.1.1
+ 2: 10.0.12.2
+ 3: 10.0.2.2 reached
+    Resume: pmtu 1500 hops 3 back 3
+\end{lstlisting}
+
+\explain{TTL 62 und drei tracepath-Zeilen sagen dasselbe: Client, dann r1, dann r2, dann Server. 10.0.12.2 ist r2-eth0, also der Next Hop, den r1 gewählt hat. Wäre die Route auf r1 falsch, käme der zweite Hop woanders her oder der Ping käme mit Unreachable zurück.}
+
+\[
+\boxed{\text{client-eth0}\to\text{r1-eth0}\to\text{r1-eth1}\to\text{r2-eth0}\to\text{r2-eth1}\to\text{server-eth0}}
+\]
+
+\aufgabe{7.2}
+\angabe{topology.py um r3 und einen alternativen Weg zwischen r1 und dem Server erweitern. Neue Verbindungen für die Router-zu-Router-Kommunikation. Statische Routen so setzen, dass client1 den Server erreicht. Jeweils nur einen Pfad aktiv testen. Neue Netze, Routingtabellen von r1 und r3, ping und tracepath dokumentieren.}
+
+Der Satz zu den neuen Verbindungen bricht in der Angabe ab. Ich lese ihn als neue Punkt-zu-Punkt-Netze, so wie die vorhandene /30 zwischen r1 und r2. Die Skizze kann man auch als direkten Anschluss von r3 an den Server lesen. Das wäre keine Router-zu-Router-Strecke. r3 hängt deshalb zwischen r1 und r2. Das Server-LAN 10.0.2.0/24 bleibt an r2.
+
+\explain{Eine /30 hat vier Adressen: Netz, zwei Hosts, Broadcast. Genau zwei Router, keine Reserve für einen Endhost. Dieselbe Wahl steht schon auf der Strecke r1--r2 in der Vorlage. 10.0.13.0/30 und 10.0.23.0/30 überlappen keines der vorhandenen Netze.}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Link & Interface & Adresse & Netz \\
+\midrule
+r1--r3 & r1-eth2 & 10.0.13.1/30 & 10.0.13.0/30 \\
+r1--r3 & r3-eth0 & 10.0.13.2/30 & 10.0.13.0/30 \\
+r3--r2 & r3-eth1 & 10.0.23.1/30 & 10.0.23.0/30 \\
+r3--r2 & r2-eth2 & 10.0.23.2/30 & 10.0.23.0/30 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Pfad A, nur diese Fernrouten:
+\begin{lstlisting}
+r1: 10.0.2.0/24 via 10.0.12.2 dev r1-eth1
+r2: 10.0.1.0/24 via 10.0.12.1 dev r2-eth0
+\end{lstlisting}
+
+Pfad B, die beiden Einträge werden vorher gelöscht:
+\begin{lstlisting}
+r1: 10.0.2.0/24 via 10.0.13.2 dev r1-eth2
+r2: 10.0.1.0/24 via 10.0.23.1 dev r2-eth2
+r3: 10.0.2.0/24 via 10.0.23.2 dev r3-eth1
+r3: 10.0.1.0/24 via 10.0.13.1 dev r3-eth0
+\end{lstlisting}
+
+\explain{Zwei statische Routen zum selben Präfix wären ECMP oder eine Metrikwahl. Die Angabe will nur einen aktiven Pfad. Deshalb steht in r1 immer genau ein Eintrag für 10.0.2.0/24. \texttt{ip route del} vor \texttt{replace} räumt einen alten Eintrag weg, falls das Präfix schon da ist.}
+
+Auf Pfad B, gemessen:
+\begin{lstlisting}
+r1: 10.0.2.2 via 10.0.13.2 dev r1-eth2 src 10.0.13.1
+r3: 10.0.2.2 via 10.0.23.2 dev r3-eth1 src 10.0.23.1
+r2: 10.0.2.2 dev r2-eth1 src 10.0.2.1
+\end{lstlisting}
+Ping: 5 von 5, 0\,\% Verlust, TTL 61. Drei Router. \texttt{tracepath -n} nannte 10.0.1.1, dann 10.0.13.2. Hop 3 antwortete nicht, Hop 4 war 10.0.2.2, \texttt{hops 4 back 4}.
+
+\explain{Hop 3 fehlt in der Ausgabe, die TTL nicht. 61 ist 64 minus 3. r2 hat den Probe nicht beantwortet, das Paket ist aber angekommen. Ein einzelner fehlender Hop ist kein Beweis für einen Abbruch, wenn Ping und TTL den dritten Router zeigen.}
+
+\[
+\boxed{\text{Pfad B: client}\to\text{r1}\to\text{r3}\to\text{r2}\to\text{server, TTL 61}}
+\]
+
+\aufgabe{7.3}
+\angabe{Den beiden Wegen unterschiedliche Linkverzögerungen geben. Beispiel delayA = 5\,ms, delayB = 30\,ms. RTT mit ping messen und vergleichen. Warum ist die beobachtete RTT nicht einfach die Summe der angegebenen Linkwerte?}
+
+Verzögerung pro Richtung, mit \texttt{tc qdisc show} geprüft: client--r1 und r2--server je 10\,ms (Vorlage), r1--r2 5\,ms, r1--r3 und r3--r2 je 30\,ms. TCLink setzt denselben Wert in beide Richtungen.
+
+\begin{align*}
+t_{A} &= 10\,\mathrm{ms}+5\,\mathrm{ms}+10\,\mathrm{ms} && \why{drei Links, eine Richtung}\\
+t_{A} &= 25\,\mathrm{ms} && \why{$10+5+10=25$}\\
+\mathrm{RTT}_{A} &= 2\cdot 25\,\mathrm{ms} && \why{netem gilt pro Richtung}\\
+\mathrm{RTT}_{A} &= 50\,\mathrm{ms} && \why{$2\cdot 25=50$}
+\end{align*}
+
+\begin{align*}
+t_{B} &= 10\,\mathrm{ms}+30\,\mathrm{ms}+30\,\mathrm{ms}+10\,\mathrm{ms} && \why{vier Links, eine Richtung}\\
+t_{B} &= 80\,\mathrm{ms} && \why{$10+30+30+10=80$}\\
+\mathrm{RTT}_{B} &= 2\cdot 80\,\mathrm{ms} && \why{netem gilt pro Richtung}\\
+\mathrm{RTT}_{B} &= 160\,\mathrm{ms} && \why{$2\cdot 80=160$}
+\end{align*}
+
+Gemessen, fünf spätere Pings, Pfad A: min/avg/max = 50,057/50,071/50,087\,ms, TTL 62, 0\,\% Verlust. Der einzelne Ping davor: 100,206\,ms.
+
+Pfad B: 160,081/160,143/160,186\,ms, TTL 61, 0\,\% Verlust. Der einzelne Ping davor: 280,512\,ms.
+
+\explain{Die Angabe nennt 5\,ms und 30\,ms. Wer nur diese beiden Zahlen addiert, landet bei 35\,ms und trifft keine der Messungen. Ping zählt Hin- und Rückweg. Die gemeinsamen 10-ms-Links stecken in beiden Pfaden. Pfad B hat zwei Links mit 30\,ms. Das erste Paket wartet zusätzlich auf ARP, das in der Linksumme nicht vorkommt. Die späteren Pakete liegen nah an 50\,ms bzw. 160\,ms, das erste nicht.}
+
+\[
+\boxed{\text{spätere RTT: Pfad A 50,071\,ms, Pfad B 160,143\,ms}}
+\]
+
+\aufgabe{7.4}
+\angabe{Absichtlich eine statische Route entfernen, Beispiel Route von r3 zum Server. Ursache mit ping, traceroute und den besprochenen Tools finden. Dokumentieren, welche Tests zuerst kommen, was ip addr und ip route liefern, wann ping, traceroute und Wireshark den Hinweis geben. Fehler, Diagnose und Korrektur festhalten.}
+
+Auf Pfad B nur diese Route gelöscht:
+\begin{lstlisting}
+r3: ip route del 10.0.2.0/24
+\end{lstlisting}
+Die Route von r3 nach 10.0.1.0/24 blieb.
+
+Zuerst die Nachbarn. client nach 10.0.1.1: 1 von 1, 20,022\,ms, TTL 64. r1 nach 10.0.13.2: 1 von 1, 60,129\,ms, TTL 64. Das ist zweimal 30\,ms auf diesem einen Link. Die Strecke bis r3 steht.
+
+\texttt{ip -br addr} auf r3: r3-eth0 \texttt{UP} mit 10.0.13.2/30, r3-eth1 \texttt{UP} mit 10.0.23.1/30. Die Interfaces sind nicht das Problem.
+
+\texttt{ip route} auf r3 danach:
+\begin{lstlisting}
+10.0.1.0/24 via 10.0.13.1 dev r3-eth0
+10.0.13.0/30 dev r3-eth0 proto kernel scope link src 10.0.13.2
+10.0.23.0/30 dev r3-eth1 proto kernel scope link src 10.0.23.1
+\end{lstlisting}
+\texttt{10.0.2.0/24} fehlt. \texttt{ip route get 10.0.2.2} antwortete \texttt{Network is unreachable}.
+
+Dann der Ping vom Client zum Server: \texttt{From 10.0.13.2 Destination Net Unreachable}, 3 gesendet, 0 empfangen, 100\,\% Verlust. 10.0.13.2 ist r3-eth0.
+
+\explain{\texttt{ip addr} sagt, ob das Interface existiert und eine Adresse hat. \texttt{ip route} sagt, ob der Router das Zielnetz kennt. Ping zum Nachbarn trennt ``Link tot'' von ``Route fehlt''. Ping zum Server nennt den Absender der Fehlermeldung. Hier ist das 10.0.13.2, also r3, nicht der Client und nicht der Server.}
+
+\texttt{tracepath -n 10.0.2.2} im Fehlerfall: Hop 1 war 10.0.1.1, danach \texttt{no reply} bis Hop 30. Der Absender der Unreachable-Meldung taucht dort nicht als Hop auf.
+
+Mitschnitt auf r3-eth0, gelesen mit tshark, kein Wireshark-Fenster (\texttt{xterm} fehlt):
+\begin{lstlisting}
+10.0.1.2 -> 10.0.2.2  ICMP Typ 8 Code 0  Echo request  TTL 63
+10.0.13.2 -> 10.0.1.2 ICMP Typ 3 Code 0  Destination unreachable
+                      Network unreachable
+\end{lstlisting}
+TTL 63 heißt: das Echo hat r1 schon passiert und ist auf r3 angekommen. Typ 3 Code 0 ist Network unreachable. r3 hat nicht weitergeleitet.
+
+\explain{Wireshark wird entscheidend, wenn ping nur ``timeout'' sagt oder tracepath keinen Absender nennt. Hier hat ping den Absender schon genannt. Der Mitschnitt bestätigt ihn am Interface r3-eth0 und zeigt, dass das Paket ankam und nicht irgendwo davor verloren ging. \texttt{ip addr} kann diesen Unterschied nicht zeigen.}
+
+Korrektur:
+\begin{lstlisting}
+r3: ip route replace 10.0.2.0/24 via 10.0.23.2 dev r3-eth1
+\end{lstlisting}
+Danach Ping: 3 von 3, TTL 61, RTT 160,133 bis 160,686\,ms.
+
+\[
+\boxed{\text{Fehler: r3 ohne 10.0.2.0/24, ICMP Typ 3 Code 0 von 10.0.13.2}}
+\]
+
+\aufgabe{7.5}
+\angabe{CSMA beschreiben. Verhalten bei freiem und belegtem Kanal, und warum es trotzdem Kollisionen gibt. Unterschied zu CSMA/CD, Reaktion bei erkannter Kollision. In welchen Netzen CSMA/CD oder CSMA/CA?}
+
+Die Folien der VO bis Kapitel 3 enthalten diesen Abschnitt nicht. Die VO nennt Kurose/Ross. Die Antworten folgen dieser Darstellung und IEEE 802.3 bzw. 802.11, nicht einer Folie, die hier noch nicht liegt.
+
+CSMA (Carrier Sense Multiple Access): Der Knoten hört den gemeinsamen Kanal ab, bevor er sendet. Ist der Kanal frei, sendet er. Ist er belegt, wartet er und sendet nicht sofort. Kollisionen bleiben möglich, weil das Signal Laufzeit hat. Zwei Knoten können beide Stille hören und beide anfangen, bevor das Signal des anderen ankommt.
+
+CSMA schickt den Rahmen zu Ende, auch wenn unterwegs eine Kollision entsteht. CSMA/CD hört während des Sendens mit. Weicht das Empfangene vom Gesendeten ab, bricht die Station den Rahmen ab, sendet ein Jam-Signal und wartet eine zufällige Zeit (exponential backoff), bevor sie es erneut versucht. Das Jam-Signal soll andere Empfänger den beschädigten Rahmen verwerfen lassen.
+
+CSMA/CD wird im klassischen gemeinsamen Ethernet eingesetzt, IEEE 802.3, Koax und Hubs, halbduplex. Auf einer geschalteten Vollduplex-Strecke gibt es diesen Wettbewerb nicht, dort läuft CSMA/CD nicht. CSMA/CA wird in IEEE 802.11 eingesetzt. Eine Funkstation kann beim Senden schlecht mithören, das eigene Signal übertönt den Kanal. Sie wartet, bis der Kanal frei ist, sendet den Rahmen ganz und erwartet eine Bestätigung. Bleibt die aus, nimmt sie eine Kollision an und wartet mit exponential backoff. RTS/CTS ist eine zusätzliche Absprache vor dem Senden, kein Pflichtteil jeder Übertragung.
+
+\explain{Die Frage trennt drei Dinge. CSMA ist das Abhören vor dem Senden. CD ist das Abbrechen während des Sendens, das geht auf einem gemeinsamen Kupfersegment. CA ist das Vermeiden vor dem Senden, das braucht WLAN, weil Mithören beim Senden dort schlecht geht. Wer CD und CA vertauscht, nennt beim Ethernet die falsche Reaktion: WLAN bricht den Rahmen nicht mitten im Senden ab.}
+
+\[
+\boxed{\text{CSMA/CD: klassisches Ethernet (802.3). CSMA/CA: WLAN (802.11).}}
+\]
+\end{document}

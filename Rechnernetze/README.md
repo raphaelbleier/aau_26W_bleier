@@ -9,9 +9,12 @@
 | 3.1–3.5 | POP3-Client und -Server, HTTP/0.9, HTTP/1.0, Keep-Alive, Threads und Logging | Beide Moodle-Gruppen: 17.11.2026, 08:00 | [Code und Testbericht](ueb03/README.md), [Lösung](ueb03/loesung_blatt03.pdf), [Erklärung](ueb03/erklaerung_blatt03.pdf) |
 | 4.1–4.6 | Mininet, UDP, tcpdump, RN-Lab-Routing, TCP-Client und -Server | Beide Moodle-Gruppen: 24.11.2026, 08:00 | [Code und Erklärung](ueb04/README.md), [KI-Kennzeichnung](ueb04/KI_NUTZUNG.md) |
 | 6.1–6.7 | IP-Adressen, statische Routen, Subnetting, Dijkstra, Distance-Vector, zweiter Client | Horvath: 15.12.2026, 08:00; Alkhateeb: 15.12.2026, 10:00 | [Lösung](ueb06/loesung_blatt06.pdf), [Erklärung](ueb06/erklaerung_blatt06.pdf), [Topologie](ueb06/topology.py) |
+| 7.1–7.5 | Routingpfad, r3, zwei Pfade, Linkverzögerung, Fehlersuche, CSMA | Beide Moodle-Gruppen: 12.01.2027, 08:00 | [Lösung](ueb07/loesung_blatt07.pdf), [Erklärung](ueb07/erklaerung_blatt07.pdf), [Topologie](ueb07/topology.py) |
 
 Die Aufgaben 1.1 bis 1.7 sind vorbereitet und getestet. Die offizielle Abgabe braucht laut Aufnahmefolien den Gruppennamen im Dateinamen (`ueb01-gruppeYY.zip`). Die Moodle-Seite zeigt zwei Gruppen-Abgaben, aber Raphaels Gruppennummer ist noch nicht festgestellt. Deshalb ist kein gruppenspezifisches Archiv erstellt und es wurde nichts auf Moodle eingereicht.
 
-Blatt 6 ist mit Gruppe 1 (Raphael Bleier, Devis, Fabio) beschriftet. Welche der beiden Abgaben das ist, habe ich nicht geprüft. Nichts wurde hochgeladen.
+Blatt 6 und Blatt 7 sind mit Gruppe 1 (Raphael Bleier, Devis, Fabio) beschriftet. Welche der beiden Abgaben das ist, habe ich nicht geprüft. Nichts wurde hochgeladen.
+
+Blatt 5 hat in Moodle noch die Datei von Übungsblatt 02. Dafür liegt hier keine Lösung.
 
 Generative KI ist laut Aufnahmefolien zur LV erlaubt, muss aber gekennzeichnet werden. Die Programme nennen das verwendete Tool, Modell, Datum und den jeweiligen Prompt am Dateianfang.
