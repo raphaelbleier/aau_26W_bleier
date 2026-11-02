@@ -10,6 +10,7 @@ Lösungen zu den Übungsblättern der Lehrveranstaltung Linear Optimization (WS 
 | [ueb02](ueb02) | Standardform, Graph lesen, grafische Lösung (2.1 bis 2.3) | 19.10.2026 | [Bleier_sheet_2.pdf](ueb02/Bleier_sheet_2.pdf) | [Bleier_sheet_2.tex](ueb02/Bleier_sheet_2.tex) |
 | [ueb03](ueb03) | Basis/Nichtbasis, Dictionary, erster Pivot und Optimalität (3.1 bis 3.3) | 26.10.2026, 12:00 (auch Kreuzeln) | [Lösung](ueb03/loesung_blatt03.pdf), [Erklärung](ueb03/erklaerung_blatt03.pdf), [Uploadname](ueb03/Bleier_sheet_3.pdf) | [blatt03.tex](ueb03/blatt03.tex) |
 | [ueb04](ueb04) | Zulässige Basislösungen, Kernrichtungen, Initial-Dictionary in Python (4.1 bis 4.3) | 02.11.2026, 12:00 (auch Kreuzeln) | [Lösung](ueb04/loesung_blatt04.pdf), [Erklärung](ueb04/erklaerung_blatt04.pdf), [Uploadname](ueb04/Bleier_sheet_4.pdf) | [blatt04.tex](ueb04/blatt04.tex), [Python-Abgabe](ueb04/Bleier_sheet_4.py) |
+| [ueb05](ueb05) | Mehrere Optima, Null-Rechte-Seite, Entering/Leaving in Python (5.1 bis 5.3) | 09.11.2026, 12:00 (auch Kreuzeln) | [Lösung](ueb05/loesung_blatt05.pdf), [Erklärung](ueb05/erklaerung_blatt05.pdf), [Uploadname](ueb05/Bleier_sheet_5.pdf) | [blatt05.tex](ueb05/blatt05.tex), [Python-Abgabe](ueb05/Bleier_sheet_5.py) |
 
 Die Classroom-Aufgabe gehört laut Kursablauf nicht zur schriftlichen Abgabe. Ab Blatt 3 liegt sie nur als Lernzusatz im Erklär-PDF. Blatt 1 und 2 behalten ihre bisherige Form mit Erklärungen direkt im Lösungs-PDF; ab Blatt 3 entstehen eine schlichte Lösung und eine ausführlichere Erklärung aus derselben LaTeX-Quelle.
 
