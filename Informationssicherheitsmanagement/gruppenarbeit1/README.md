@@ -1,6 +1,6 @@
 # Gruppenarbeit 1
 
-Informationssicherheitsstrategie für die fiktive Reha Waidmannsdorf GmbH, Klagenfurt. Gruppe 1: Bleier, Bugelnig, Lugger, Mele, Schmickl. Kern ist die Reha bei Erektionsstörungen nach einer Prostata-OP, Therapie mit der selbst gebauten Vakuumpumpe KP-1.
+Informationssicherheitsstrategie für die fiktive Privatklinik Annabichl GmbH, Klagenfurt. Gruppe 1: Bleier, Bugelnig, Lugger, Mele, Schmickl. Kern sind Operationen am Gehirn.
 
 Rahmen aus der Angabe: KMU, Österreich, GmbH, ein Kernbereich, Medizin (Privatklinik/Reha). Die Folien bleiben bei zwei Seiten Unternehmen und zwei Seiten Strategie.
 
