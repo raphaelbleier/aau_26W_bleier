@@ -1,0 +1,426 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=.5pt,title=Erklärung}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\newcommand{\why}[1]{\text{\small #1}}
+\newcommand{\angabe}[1]{\textit{#1}\par}
+\newcommand{\aufgabe}[1]{\section*{Exercise #1}}
+\newcommand{\teil}[1]{\subsection*{(#1)}}
+\newcommand{\at}[1]{\texttt{#1}}
+\begin{document}
+\begin{center}{\Large Preparation for Minitest 1 -- worked solution}\\Logic Programming (621.315), Winter semester 2026\\Raphael Bleier\end{center}
+\explain{Dieses Dokument ist die ausgearbeitete Vorbereitung für den ersten Minitest. Zwei Begriffe tragen alles: Das \emph{Redukt} $P^X$ eines Programms $P$ bzgl.\ einer Kandidatenmenge $X$ entsteht, indem man jede Regel streicht, in der ein default-negiertes Atom aus $X$ vorkommt, und die übrigen Default-Negationen weglässt. $X$ ist genau dann ein Answer Set (stabiles Modell), wenn $X$ die kleinste abgeschlossene Menge $\operatorname{Cn}(P^X)$ des Redukts ist. Default-Negation \texttt{not a} ist keine Verneinung im klassischen Sinn: Sie prüft nur, ob \texttt{a} im Kandidaten fehlt. Fakten sind Regeln mit leerem Körper.}
+\aufgabe{1}
+\angabe{Given is program P. Determine all of its answer sets.}
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+dress :- not shirt.
+shirt :- not dress.
+sandals :- not sneakers.
+sneakers :- not sandals.
+pants :- sneakers.
+skirt :- shirt, sandals.
+sandals :- dress.
+\end{verbatim}
+\end{small}
+\explain{Wir suchen zuerst, welche Kombinationen überhaupt infrage kommen, und prüfen dann jeden Kandidaten mit dem Redukt. Die Regeln 1 und 2 bzw.\ 3 und 4 streuen sich gegenseitig mit Default-Negation. Ein positiver Kreis wie \texttt{pants :- sneakers} ohne Startfact liefert nichts.}
+If neither $\at{dress}$ nor $\at{shirt}$ were in $X$, the reduct would contain the facts $\at{dress}$ and $\at{shirt}$, because $\at{not shirt}$ and $\at{not dress}$ would survive. Hence exactly one of $\at{dress},\at{shirt}$ is in every answer set.
+\explain{Hier ist der Kern der Default-Negation: Steht \texttt{not shirt} im Körper und ist \texttt{shirt} nicht im Kandidaten, bleibt nach dem Streichen der Negation nur noch der Kopf zurück, also ein Fact. Der Fact landet in $\operatorname{Cn}$ und widerspricht der Annahme.}
+If neither $\at{sandals}$ nor $\at{sneakers}$ were in $X$, the reduct would contain the facts $\at{sandals}$ and $\at{sneakers}$ for the same reason. Hence exactly one of $\at{sandals},\at{sneakers}$ is in every answer set.
+\explain{Gleiche Argumentation wie eben, nur mit dem zweiten Regelpaar. Solche gegenseitigen Ausschlusspaare erzeugen die Verzweigungen im Suchbaum.}
+If $\at{dress}\in X$, then rule 7 survives in the reduct and has body $\at{dress}$, which becomes a fact. Hence $\at{sandals}\in\operatorname{Cn}(P^X)$, so $\at{sandals}\in X$. This rules out $\at{sneakers}$. The candidate is $X_1=\{\at{dress},\at{sandals}\}$.
+\explain{Regel 7 hängt $\at{sandals}$ an $\at{dress}$: Wer die Hose--Schuh--Kette einmal anwirft, bekommt auch die Sandalen. Darum kann $\at{dress}$ nie allein stehen.}
+If $\at{shirt}\in X$, rule 6 survives and forces $\at{skirt}\in\operatorname{Cn}(P^X)$ as soon as $\at{sandals}\in X$. Splitting on the shoe pair gives the remaining candidates $X_2=\{\at{shirt},\at{sandals},\at{skirt}\}$ and $X_3=\{\at{shirt},\at{sneakers},\at{pants}\}$.
+\explain{Bei $\at{shirt}$ entscheidet das Schuhpaar: Mit Sandalen feuert Regel 6 und zieht den Rock nach; mit Sneakern feuert Regel 5 und zieht die Hose nach. Alle anderen Atome haben dann keine unterstützende Regel mehr.}
+These candidates exhaust the forced choices. $\square$
+\paragraph{Candidate $X_1$}
+\[
+X=\{\at{dress},\;\at{sandals}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is retained because $\{\at{shirt}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 2 is deleted because $\{\at{dress}\}\subseteq X$.
+
+Rule 3 is retained because $\{\at{sneakers}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 4 is deleted because $\{\at{sandals}\}\subseteq X$.
+
+Rule 5 is retained because it contains no default negation.
+
+Rule 6 is retained because it contains no default negation.
+
+Rule 7 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+dress.
+sandals.
+pants :- sneakers.
+skirt :- shirt, sandals.
+sandals :- dress.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{dress}\} && \why{fact, rule 1}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{dress}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{sandals}\} && \why{fact, rule 2}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{sandals}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{3} &= M_{2}\cup \{\at{sandals}\} && \why{rule 5, head already present}
+\end{align*}
+\explain{Regel 5 feuert, weil $\at{dress}$ als Fact hergeleitet ist. Ihr Kopf $\at{sandals}$ ist aber schon in der Menge, also ändert sich nichts.}
+No rule has a true body and a head outside $M_{3}$: rule 3 needs $\at{sneakers}$ and rule 4 needs $\at{shirt}$, neither of which is derivable. Hence this is the least fixed point.
+\explain{Diese beiden Regeln bleiben für immer ungenutzt: $\at{sneakers}$ hat im Redukt nur Regel 3 selbst zur Verfügung, die ihren eigenen Kopf wieder verlangt, und $\at{shirt}$ kommt nirgends vor.}
+\[
+\operatorname{Cn}(R)=\{\at{dress},\;\at{sandals}\}
+\]
+\[
+\operatorname{Cn}(P^X)=X
+\]
+\[
+\boxed{X\text{ is an answer set.}}
+\]
+\paragraph{Candidate $X_2$}
+\[
+X=\{\at{shirt},\;\at{sandals},\;\at{skirt}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is deleted because $\{\at{shirt}\}\subseteq X$.
+
+Rule 2 is retained because $\{\at{dress}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 3 is retained because $\{\at{sneakers}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 4 is deleted because $\{\at{sandals}\}\subseteq X$.
+
+Rule 5 is retained because it contains no default negation.
+
+Rule 6 is retained because it contains no default negation.
+
+Rule 7 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+shirt.
+sandals.
+pants :- sneakers.
+skirt :- shirt, sandals.
+sandals :- dress.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{shirt}\} && \why{fact, rule 1}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{shirt}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{sandals}\} && \why{fact, rule 2}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{sandals}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{3} &= M_{2}\cup \{\at{skirt}\} && \why{rule 4}
+\end{align*}
+\explain{Für $\at{skirt}$ brauchen wir $\at{shirt}$ und $\at{sandals}$. Weil diese Voraussetzungen bereits hergeleitet sind, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+No rule has a true body and a head outside $M_{3}$: rule 3 needs $\at{sneakers}$ and rule 5 needs $\at{dress}$, neither of which is derivable. Hence this is the least fixed point.
+\explain{Regel 3 liefert $\at{sneakers}$ nie, weil im Redukt keine Regel mehr den Kopf $\at{sneakers}$ trägt. Regel 5 scheitert am fehlenden $\at{dress}$.}
+\[
+\operatorname{Cn}(R)=\{\at{shirt},\;\at{sandals},\;\at{skirt}\}
+\]
+\[
+\operatorname{Cn}(P^X)=X
+\]
+\[
+\boxed{X\text{ is an answer set.}}
+\]
+\paragraph{Candidate $X_3$}
+\[
+X=\{\at{shirt},\;\at{sneakers},\;\at{pants}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is deleted because $\{\at{shirt}\}\subseteq X$.
+
+Rule 2 is retained because $\{\at{dress}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 3 is deleted because $\{\at{sneakers}\}\subseteq X$.
+
+Rule 4 is retained because $\{\at{sandals}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 5 is retained because it contains no default negation.
+
+Rule 6 is retained because it contains no default negation.
+
+Rule 7 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+shirt.
+sneakers.
+pants :- sneakers.
+skirt :- shirt, sandals.
+sandals :- dress.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{shirt}\} && \why{fact, rule 1}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{shirt}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{sneakers}\} && \why{fact, rule 2}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{sneakers}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{3} &= M_{2}\cup \{\at{pants}\} && \why{rule 3}
+\end{align*}
+\explain{Für $\at{pants}$ brauchen wir $\at{sneakers}$. Weil diese Voraussetzung bereits hergeleitet ist, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+No rule has a true body and a head outside $M_{3}$: rule 4 needs $\at{sandals}$ and rule 5 needs $\at{dress}$, neither of which is derivable. Hence this is the least fixed point.
+\explain{$\at{sandals}$ hätte im Redukt nur Regel 5 zur Verfügung, die $\at{dress}$ bräuchte. Da $\at{dress}$ fehlt, bleiben beide draußen -- genau das verlangt der Kandidat.}
+\[
+\operatorname{Cn}(R)=\{\at{shirt},\;\at{sneakers},\;\at{pants}\}
+\]
+\[
+\operatorname{Cn}(P^X)=X
+\]
+\[
+\boxed{X\text{ is an answer set.}}
+\]
+The complete list of answer sets is:
+\[
+\boxed{X_1=\{\at{dress},\;\at{sandals}\}}
+\]
+\[
+\boxed{X_2=\{\at{shirt},\;\at{sandals},\;\at{skirt}\}}
+\]
+\[
+\boxed{X_3=\{\at{shirt},\;\at{sneakers},\;\at{pants}\}}
+\]
+\explain{Alle drei Kandidaten wurden zusätzlich mit dem Solver geprüft: clingo liefert genau diese drei Answer Sets.}
+\aufgabe{2}
+\angabe{Given is program P. Determine whether the following sets are stable models: \{b, c, d, h\}; \{a, f\}; \{b, d, e, g, h\}.}
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+a :- not b, not d.
+b :- not a.
+c :- b, not e.
+d :- c.
+e :- d, not c.
+f :- a, not g.
+g :- not f.
+h :- b, g.
+\end{verbatim}
+\end{small}
+\explain{Bei einer Stabilitätsprüfung ist der Kandidat vorgegeben; wir müssen ihn nicht suchen. Prozedur: Redukt bilden, kleinste abgeschlossene Menge berechnen, mit dem Kandidaten vergleichen. Gleichheit heißt stabiles Modell, sonst nicht.}
+\paragraph{Candidate $X_1$}
+\[
+X=\{\at{b},\;\at{c},\;\at{d},\;\at{h}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is deleted because $\{\at{b},\;\at{d}\}\subseteq X$.
+
+Rule 2 is retained because $\{\at{a}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 3 is retained because $\{\at{e}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 4 is retained because it contains no default negation.
+
+Rule 5 is deleted because $\{\at{c}\}\subseteq X$.
+
+Rule 6 is retained because $\{\at{g}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 7 is retained because $\{\at{f}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 8 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+b.
+c :- b.
+d :- c.
+f :- a.
+g.
+h :- b, g.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{b}\} && \why{fact, rule 2}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{b}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{g}\} && \why{fact, rule 7}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{g}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{3} &= M_{2}\cup \{\at{c}\} && \why{rule 3}
+\end{align*}
+\explain{Für $\at{c}$ brauchen wir $\at{b}$. Weil diese Voraussetzung bereits hergeleitet ist, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+\begin{align*}
+M_{4} &= M_{3}\cup \{\at{d}\} && \why{rule 4}
+\end{align*}
+\explain{Für $\at{d}$ brauchen wir $\at{c}$. Weil diese Voraussetzung bereits hergeleitet ist, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+\begin{align*}
+M_{5} &= M_{4}\cup \{\at{h}\} && \why{rule 8}
+\end{align*}
+\explain{Für $\at{h}$ brauchen wir $\at{b}$ und $\at{g}$. Weil diese Voraussetzungen bereits hergeleitet sind, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+No rule has a true body and a head outside $M_{5}$: rule 6 needs $\at{a}$, which is not derivable. Hence this is the least fixed point.
+\[
+\operatorname{Cn}(R)=\{\at{b},\;\at{c},\;\at{d},\;\at{g},\;\at{h}\}
+\]
+\[
+\operatorname{Cn}(P^X)\ne X
+\]
+\[
+\boxed{X\text{ is not an answer set.}}
+\]
+The atom $\at{g}$ is in $\operatorname{Cn}(P^X)$ but missing from the candidate.
+\explain{Der Fehler liegt nicht bei $\at{d}$: Das ist sauber über $\at{c}$ hergeleitet. Das Problem ist $\at{g}$ -- die Regel \texttt{g :- not f} bleibt im Redukt als Fact erhalten, weil $\at{f}$ nicht im Kandidaten ist, und zieht dann $\at{h}$ nach. Genau deshalb sind die negierten Streitpaare $\at{f}$ und $\at{g}$ beim Aufstellen des Kandidaten zu bedenken.}
+\paragraph{Candidate $X_2$}
+\[
+X=\{\at{a},\;\at{f}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is retained because $\{\at{b},\;\at{d}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 2 is deleted because $\{\at{a}\}\subseteq X$.
+
+Rule 3 is retained because $\{\at{e}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 4 is retained because it contains no default negation.
+
+Rule 5 is retained because $\{\at{c}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 6 is retained because $\{\at{g}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 7 is deleted because $\{\at{f}\}\subseteq X$.
+
+Rule 8 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+a.
+c :- b.
+d :- c.
+e :- d.
+f :- a.
+h :- b, g.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{a}\} && \why{fact, rule 1}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{a}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{f}\} && \why{rule 6}
+\end{align*}
+\explain{Für $\at{f}$ brauchen wir $\at{a}$. Weil diese Voraussetzung bereits hergeleitet ist, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+No rule has a true body and a head outside $M_{2}$: rule 3 needs $\at{b}$ and rule 5 needs $\at{d}$, neither of which is derivable. Hence this is the least fixed point.
+\[
+\operatorname{Cn}(R)=\{\at{a},\;\at{f}\}
+\]
+\[
+\operatorname{Cn}(P^X)=X
+\]
+\[
+\boxed{X\text{ is an answer set.}}
+\]
+\paragraph{Candidate $X_3$}
+\[
+X=\{\at{b},\;\at{d},\;\at{e},\;\at{g},\;\at{h}\}
+\]
+Reduct $R=P^X$: delete a rule if a default-negated atom belongs to $X$; remove the remaining default negations. Deletion decisions use the order in $P$; the subsequent derivation uses the order in the displayed reduct $R$.
+Rule 1 is deleted because $\{\at{b},\;\at{d}\}\subseteq X$.
+
+Rule 2 is retained because $\{\at{a}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 3 is deleted because $\{\at{e}\}\subseteq X$.
+
+Rule 4 is retained because it contains no default negation.
+
+Rule 5 is retained because $\{\at{c}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 6 is deleted because $\{\at{g}\}\subseteq X$.
+
+Rule 7 is retained because $\{\at{f}\}\cap X=\varnothing$; its default negations are removed.
+
+Rule 8 is retained because it contains no default negation.
+
+Rule numbers refer to the following order (one rule ends at each period).
+\begin{small}
+\begin{verbatim}
+b.
+d :- c.
+e :- d.
+g.
+h :- b, g.
+\end{verbatim}
+\end{small}
+\explain{Beim Redukt bleibt die Kandidatenmenge fest. Wir entscheiden zuerst, welche Regeln wegfallen. Erst danach berechnen wir aus den verbleibenden positiven Regeln die kleinste abgeschlossene Menge. Ein Modell allein reicht nicht: Diese Menge muss genau der Kandidat sein.}
+\[
+M_0=\varnothing
+\]
+\begin{align*}
+M_{1} &= M_{0}\cup \{\at{b}\} && \why{fact, rule 2}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{b}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{2} &= M_{1}\cup \{\at{g}\} && \why{fact, rule 7}
+\end{align*}
+\explain{Diese Regel hat keinen Körper. Ihr Kopf $\at{g}$ ist damit ein Fakt und muss in die Menge.}
+\begin{align*}
+M_{3} &= M_{2}\cup \{\at{h}\} && \why{rule 8}
+\end{align*}
+\explain{Für $\at{h}$ brauchen wir $\at{b}$ und $\at{g}$. Weil diese Voraussetzungen bereits hergeleitet sind, dürfen wir den Regelkopf jetzt aufnehmen und alle bisherigen Atome behalten; bei einer fehlenden Voraussetzung würde diese Regel dagegen noch nichts beitragen.}
+No rule has a true body and a head outside $M_{3}$: rule 3 needs $\at{c}$, which is not derivable. Hence this is the least fixed point.
+\[
+\operatorname{Cn}(R)=\{\at{b},\;\at{g},\;\at{h}\}
+\]
+\[
+\operatorname{Cn}(P^X)\ne X
+\]
+\[
+\boxed{X\text{ is not an answer set.}}
+\]
+The atoms $\at{d}$ and $\at{e}$ are in the candidate but not in $\operatorname{Cn}(P^X)$.
+\explain{Warum sterben $\at{d}$ und $\at{e}$? Regel 3 ist gestrichen, weil $\at{e}$ im Kandidaten steht -- also kann $\at{c}$ nirgends herkommen. Ohne $\at{c}$ feuert Regel 4 nie, und ohne $\at{d}$ feuert Regel 5 nie. Die beiden Kandidaten-Atome begründen sich nicht selbst; ein positiver Kreis ohne Startfact bleibt leer.}
+\explain{Die Verdicts wurden zusätzlich mit dem Solver geprüft: Nur $\{\at{a},\;\at{f}\}$ ist ein stabiles Modell. Die vollständige Answer-Set-Liste des Programms lautet $\{\at{a},\;\at{f}\}$, $\{\at{a},\;\at{g}\}$ und $\{\at{b},\;\at{c},\;\at{d},\;\at{g},\;\at{h}\}$.}
+\end{document}
