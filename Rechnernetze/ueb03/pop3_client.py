@@ -1,6 +1,5 @@
 """Ü 3.2: POP3 über Sockets, ohne poplib.
 
-KI-Kennzeichnung: Hermes Agent v0.21.5, gpt-6.1-sol, 19.10.2026.
 Anfrage: Ü 3.2: Socket-Client anmelden, Nachrichten auflisten und abrufen;
 Standardbibliothek verwenden und die Verbindung ordentlich beenden.
 """
@@ -66,7 +65,12 @@ class POPClient:
     def retrieve(self, number):
         if not isinstance(number, int) or number <= 0:
             raise ValueError('Nachrichtennummer muss positiv sein')
-        return b'\r\n'.join(self.command('RETR ' + str(number), True)) + b'\r\n'
+        lines = self.command('RETR ' + str(number), True)
+        if isinstance(lines, bytes):
+            raise POPError('RETR did not return a multiline response')
+        if not lines:
+            return b''
+        return b'\r\n'.join(lines) + b'\r\n'
 
     def quit(self):
         try:

@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.3): „Schreiben Sie ein Python-Programm convert.py, welches den Namen einer Eingabedatei und den Namen einer Ausgabedatei als Kommandozeilenparameter erhält. Die Eingabedatei enthält einen UTF-8-kodierten Text. Lesen Sie die Datei ein und schreiben Sie den Inhalt in eine neue UTF-8-kodierte Datei. Zeilenumbrüche sollen dabei unabhängig vom auf dem Betriebssystem verwendeten Zeilenende korrekt verarbeitet werden.“
+
+
 import argparse
 from pathlib import Path
 
@@ -9,6 +9,13 @@ def convert_file(input_path, output_path):
     source = Path(input_path)
     destination = Path(output_path)
     if source.resolve() == destination.resolve():
+        raise ValueError("Eingabe- und Ausgabedatei müssen verschieden sein.")
+    try:
+        same_file = source.samefile(destination)
+    except FileNotFoundError:
+        same_file = False
+    # resolve findet gleiche Pfade und Symlinks; samefile zusätzlich Hardlinks.
+    if same_file:
         raise ValueError("Eingabe- und Ausgabedatei müssen verschieden sein.")
 
     # newline=None liest LF, CRLF und CR einheitlich als \n ein.

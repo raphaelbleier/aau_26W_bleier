@@ -23,7 +23,7 @@
 \begin{center}
 {\Large Übungsblatt 03: POP3 und HTTP mit Python Sockets}\\
 PR Rechnernetze und Netzwerkprogrammierung 621.801/621.802\\
-Raphael Bleier, Gruppe YY, WS 2026/2027
+Raphael Bleier, Devis, Fabio, Gruppe 1, WS 2026/2027
 \end{center}
 
 \aufgabe{3.1}
@@ -31,7 +31,7 @@ Raphael Bleier, Gruppe YY, WS 2026/2027
 
 Nach dem TCP-Verbindungsaufbau schickt der Server eine Begrüßung mit \texttt{+OK}. Es folgen drei Zustände:
 \begin{enumerate}
-\item AUTHORIZATION: \texttt{USER} und \texttt{PASS} übermitteln die Anmeldung. Der Server prüft die Daten und sperrt den Maildrop exklusiv. Erst bei Erfolg beginnt TRANSACTION (RFC 1939, Abschnitt 4).
+\item AUTHORIZATION: Der Client sendet die POP3-Kommandos \texttt{USER} und \texttt{PASS}; der Server prüft die Anmeldung und sperrt den Maildrop exklusiv. Erst bei Erfolg beginnt TRANSACTION (RFC 1939, Abschnitt 4).
 \item TRANSACTION: \texttt{STAT} nennt Anzahl und Gesamtgröße; \texttt{LIST} listet Größen und \texttt{RETR n} liefert Nachricht $n$. \texttt{DELE n} markiert eine Nachricht zunächst nur. \texttt{RSET} entfernt diese Markierungen (Abschnitt 5).
 \item UPDATE: \texttt{QUIT} aus TRANSACTION übernimmt die Löschungen und beendet die Verbindung. Bei einem Abbruch ohne dieses \texttt{QUIT} darf der Server die Markierungen nicht übernehmen (Abschnitt 6). \texttt{QUIT} vor der Anmeldung beendet die Verbindung ohne UPDATE.
 \end{enumerate}
@@ -73,7 +73,7 @@ Abgabe: \texttt{pop3\_server.py}. Die externe Datenbank wird über \texttt{authe
 Implementiert sind \texttt{USER}, \texttt{PASS}, \texttt{STAT}, \texttt{LIST}, \texttt{RETR}, \texttt{DELE}, \texttt{RSET}, \texttt{NOOP} und \texttt{QUIT}; zusätzlich \texttt{CAPA}, \texttt{TOP} und \texttt{UIDL}. Nachrichtennummern bleiben innerhalb einer Sitzung stabil. \texttt{UIDL} nutzt einen Hash aus Original-ID und Inhalt. Löschungen werden nur bei \texttt{QUIT} übernommen. Die Datenbankdatei bleibt unverändert; ohne dauerhafte Löschschnittstelle besteht der Löschstand nur im laufenden Serverprozess. Das Inaktivitätstimeout beträgt 600 Sekunden.
 \explain{\texttt{DELE} entfernt zunächst keine Datei. Die Sitzung merkt sich nur die Nummer. Erst beim Wechsel nach UPDATE wird die ursprüngliche Datenbank-ID in den lokalen Löschstand geschrieben. Dadurch kann ein abgebrochener Download keine bereits markierten Nachrichten versehentlich entfernen.}
 
-GUI-Test: Claws Mail 4.3.1 mit einem frischen Profil, POP3 auf Loopback, Port 11110, Testbenutzer aus der Original-Datenbank und ohne TLS. Die Option zum Löschen nach Abruf war ausgeschaltet. Nach dem Abruf erschienen vier Nachrichten im Posteingang. Die erste Nachricht wurde geöffnet. Der Screenshot zeigt die Betreffe sowie Header und Text dieser Nachricht. Die Standardbibliothek \texttt{poplib} wurde zusätzlich als unabhängiger Protokollclient verwendet.
+GUI-Test: Claws Mail 4.3.1 mit einem frischen Profil, POP3 auf Loopback, Port 11110, Testbenutzer aus der Original-Datenbank und ohne TLS. Die Option zum Löschen nach Abruf war ausgeschaltet. Nach dem Abruf erschienen vier Nachrichten im Posteingang. Die erste Nachricht wurde geöffnet. Der Screenshot zeigt Betreffe, Header und Text. Claws zeigt Größen von 158, 148, 179 und 173 B (658 B gesamt); diese GUI-Werte weichen von den durch \texttt{LIST} gelieferten Octet-Zahlen ab und gelten nicht als deren Nachweis. Die Standardbibliothek \texttt{poplib} wurde zusätzlich als unabhängiger Protokollclient verwendet.
 
 % grafik-verlangt
 \begin{center}\includegraphics[width=\linewidth]{screenshots/pop3-claws.png}\end{center}
@@ -84,10 +84,10 @@ GUI-Test: Claws Mail 4.3.1 mit einem frischen Profil, POP3 auf Loopback, Port 11
 Abgabe: \texttt{http\_server.py --mode 09}. Dieser Modus behandelt Verbindungen nacheinander. Akzeptiert wird \texttt{GET /pfad} mit CRLF. Die Antwort besteht nur aus den Dateibytes; danach wird die Verbindung geschlossen. Pfade werden dekodiert, aufgelöst und auf das Basisverzeichnis beschränkt. Fehlende Dateien und ungültige Anfragen liefern keine Antwortbytes.
 \explain{HTTP/0.9 kennt in dieser einfachen Form weder Statuszeile noch Header. Der Client erkennt das Ende deshalb am Verbindungsabbau. Ein HTTP/1.0-Statuscode als Fehlermeldung würde gerade nicht zum geforderten Verhalten passen.}
 
-Socket-Tests bestätigen \texttt{index.html}, Unterverzeichnisse und binäre Dateiinhalte. Kodierte Traversal-Versuche und Symlinks außerhalb des document root werden abgewiesen. Der document root muss während des Betriebs unter eigener Kontrolle bleiben; der Server bietet keine Betriebssystem-Sandbox gegen gleichzeitige fremde Dateisystemänderungen.
+Socket-Tests bestätigen \texttt{index.html}, Unterverzeichnisse und binäre Dateiinhalte. Kodierte Traversal-Versuche und Symlinks außerhalb des document root werden abgewiesen. Dritte dürfen den document root während des Betriebs nicht verändern. Der Server ersetzt keine Betriebssystem-Sandbox.
 \explain{Ein Präfixvergleich von Pfadzeichenketten reicht nicht. Weil auch ein scheinbar harmloser Link auf einen fremden Ordner aus dem Basisverzeichnis herausführen kann, wird zuerst das tatsächliche Ziel aufgelöst und danach geprüft, ob dieses Ziel noch innerhalb des erlaubten Verzeichnisses liegt. Erst danach darf die Datei geöffnet werden.}
 
-Mit Chromium 156.0.8078.4 und Firefox 157.0 wird die Seite in diesem Modus nicht richtig angezeigt. Die Browser senden aktuelle Request-Zeilen, die der strikte Zweitoken-Parser ablehnt. Chromium meldete \texttt{ERR\_EMPTY\_RESPONSE}; Firefox lieferte im Navigationsaufruf \texttt{NS\_ERROR\_NET\_RESET}. Der Firefox-Screenshot zeigt die leere Antwort als Browserfehler. Dieses Testergebnis wurde nicht als erfolgreiche Darstellung gewertet.
+Mit Headless Chromium 145.0.0.0 und Firefox Nightly wird die Seite in diesem Modus nicht richtig angezeigt. Die Browser senden aktuelle Request-Zeilen, die der strikte Zweitoken-Parser ablehnt. Chromium meldete \texttt{ERR\_EMPTY\_RESPONSE}; Firefox \texttt{NS\_ERROR\_NET\_EMPTY\_RESPONSE}. Die beiden Browser-Screenshots zeigen die leere Antwort. Dieses Testergebnis wurde nicht als erfolgreiche Darstellung gewertet.
 
 \explainfig{\includegraphics[width=.85\linewidth]{screenshots/http09-firefox.png}}
 
@@ -107,12 +107,16 @@ Im HTTP/1.0-Modus lieferten Chromium und Firefox den Text \glqq It works...!\grq
 
 \explainfig{\includegraphics[width=.85\linewidth]{screenshots/http10-chromium.png}}
 
+\ifexplain\clearpage\fi
 \section*{Prüfung, Quellen und Abgabe}
-21 Tests liefen mit Python 3.14.7 erfolgreich durch; Browsersteuerung mit Python 3.11.15. Getestet wurden Anmeldung, Dot-Stuffing, Größen, Sperren, Lösch-Commit, Rollback, Framing, Pfadgrenzen, HTTP-Fehler, Keep-Alive, Parallelität und Logging. Startbefehle und Einzelheiten stehen in \texttt{README.md}. Die Programme und Tests sind Teil der Abgabe.
+32 Tests liefen mit Python 3.8.20 und 3.14.7 erfolgreich durch; Browsersteuerung mit Python 3.11.15. Getestet wurden Anmeldung, Dot-Stuffing, Größen, Sperren, Lösch-Commit, Rollback samt erneuter Anmeldung nach Abbruch, ungültige HTTP/0.9-Steuerzeichen, leere RETR-Antworten, TOP ohne Nachrichtenkörper, Framing, Pfadgrenzen, HTTP-Fehler, Keep-Alive, Headerfehler, Inaktivitätstimeout, Parallelität, Loggerausfälle vor und während des Serverstarts sowie das Warten auf laufende Handler beim Schließen. Startbefehle und Einzelheiten stehen in \texttt{README.md}. Die Programme und Tests sind Teil der Abgabe.
 
-Grundlagen: Moodle-Blatt 03; bereitgestellte Datenbankschnittstelle und document root; LV-Unterlage \texttt{rn-chapter-2}, Folien 10--11 und 36--37. Normative Quellen: \href{https://www.rfc-editor.org/rfc/rfc1939}{RFC 1939}, Abschnitte 3--7; \href{https://www.rfc-editor.org/rfc/rfc2449}{RFC 2449}, Abschnitte 4--6; \href{https://www.rfc-editor.org/rfc/rfc1945}{RFC 1945}, Abschnitte 5--6; \href{https://www.rfc-editor.org/rfc/rfc8314}{RFC 8314} zur TLS-Einordnung und \href{https://www.rfc-editor.org/rfc/rfc9051}{RFC 9051} zu IMAP.
+Grundlagen: Moodle-Blatt 03, bereitgestellte Testdaten sowie Vorlesungsfolien zu HTTP, Mail und Python-Sockets (Seiten 10--11, 36--37 und 59--60).
 
-Moodle nennt für beide Gruppen den 17.11.2026, 08:00 Uhr (Stand 19.10.2026). Die Gruppennummer ist noch nicht bekannt und bleibt als YY markiert. Es wurde nichts auf Moodle eingereicht.
+POP3 und IMAP: \href{https://www.rfc-editor.org/rfc/rfc1939}{RFC 1939} (Abschnitte 3--7), \href{https://www.rfc-editor.org/rfc/rfc2449}{RFC 2449} (4--6) und \href{https://www.rfc-editor.org/rfc/rfc9051}{RFC 9051}.
 
-KI-Kennzeichnung laut Aufnahmefolien: Hermes Agent v0.21.5, Modell \texttt{gpt-6.1-sol}, verwendet am 19.10.2026 für Code, Texte und Tests. Die Python-Dateien nennen die jeweiligen Arbeitsaufträge. Alle genannten Testresultate und Screenshots stammen aus tatsächlich ausgeführten Programmen.
+HTTP und TLS: \href{https://www.rfc-editor.org/rfc/rfc1945}{RFC 1945} (Abschnitte 5--6) und \href{https://www.rfc-editor.org/rfc/rfc8314}{RFC 8314}.
+
+Moodle nennt für beide Gruppen den 17.11.2026, 08:00 Uhr (Stand 19.10.2026). Gruppe 1 ist Raphaels Angabe; die Zuordnung zu einer der beiden Moodle-Abgabeaktivitäten und die Gruppenmitgliedschaft wurden nicht geprüft. Es wurde nichts auf Moodle eingereicht.
+
 \end{document}

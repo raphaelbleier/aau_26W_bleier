@@ -1,14 +1,12 @@
-"""Ü 3.4/3.5: HTTP/0.9 und HTTP/1.0, ohne http.server.
+"""HTTP-Laborserver für die Aufgaben 3.4 und 3.5 (HTTP/0.9 und HTTP/1.0)."""
+from __future__ import annotations
 
-KI-Kennzeichnung: Hermes Agent v0.21.5, gpt-6.1-sol, 19.10.2026.
-Anfrage: Ü 3.4/3.5: Single-Thread-HTTP/0.9 mit document root und index.html;
-Multi-Thread-HTTP/1.0, persistente Verbindungen und separater Logger alle 5 s.
-"""
 import argparse
 from datetime import datetime, timezone
 import mimetypes
 from pathlib import Path
 import queue
+import re
 import socketserver
 import sys
 import threading
@@ -21,35 +19,72 @@ class BatchLogger:
         self.queue = queue.Queue()
         self.stream = stream if stream is not None else sys.stdout
         self.interval = interval
+        self._state_lock = threading.Lock()
+        self._closed = False
+        self._error = None
+        self._error_callback = None
         self.thread = threading.Thread(target=self.run, name='access-logger')
         self.thread.start()
 
+    def set_error_callback(self, callback):
+        with self._state_lock:
+            self._error_callback = callback
+            notify = self._error is not None
+        if notify:
+            callback()
+
     def record(self, method, peer):
         # Kein Request-Pfad und keine Header: keine Zugangsdaten im Zugriffslog.
-        self.queue.put((datetime.now(timezone.utc).isoformat(), method, peer[0], peer[1]))
+        with self._state_lock:
+            if self._error is not None:
+                raise RuntimeError('Logger-Thread ist fehlgeschlagen') from self._error
+            if self._closed:
+                raise RuntimeError('Logger ist bereits geschlossen')
+            self.queue.put((datetime.now(timezone.utc).isoformat(), method, peer[0], peer[1]))
 
     def run(self):
         pending = []
         deadline = time.monotonic() + self.interval
-        while True:
-            try:
-                record = self.queue.get(timeout=max(0, deadline - time.monotonic()))
-            except queue.Empty:
-                record = False
-            if record is not False and record is not None:
-                pending.append(record)
-            if record is None or time.monotonic() >= deadline:
-                if pending:
-                    self.stream.write(''.join('%s %s %s %s\n' % row for row in pending))
-                    self.stream.flush()
-                    pending.clear()
-                deadline = time.monotonic() + self.interval
-            if record is None:
-                return
+        try:
+            while True:
+                try:
+                    record = self.queue.get(timeout=max(0, deadline - time.monotonic()))
+                except queue.Empty:
+                    record = False
+                if record is not False and record is not None:
+                    pending.append(record)
+                if record is None or time.monotonic() >= deadline:
+                    if pending:
+                        self.stream.write(''.join('%s %s %s %s' % row + chr(10) for row in pending))
+                        self.stream.flush()
+                        pending.clear()
+                    deadline = time.monotonic() + self.interval
+                if record is None:
+                    return
+        except Exception as exc:
+            with self._state_lock:
+                self._error = exc
+                callback = self._error_callback
+            pending.clear()
+            while True:
+                try:
+                    self.queue.get_nowait()
+                except queue.Empty:
+                    break
+            if callback is not None:
+                callback()
 
     def close(self):
-        self.queue.put(None)
+        with self._state_lock:
+            if not self._closed:
+                self._closed = True
+                if self._error is None:
+                    self.queue.put(None)
         self.thread.join()
+        with self._state_lock:
+            error = self._error
+        if error is not None:
+            raise RuntimeError('Logger-Thread ist fehlgeschlagen') from error
 
 
 def target_file(root, target):
@@ -94,8 +129,11 @@ class HTTP09Handler(socketserver.StreamRequestHandler):
             line = self.rfile.readline(8193)
             if len(line) > 8192 or not line.endswith(b'\r\n'):
                 return
-            words = line[:-2].decode('ascii').split()
-            if len(words) != 2 or words[0] != 'GET':
+            request_line = line[:-2]
+            if any(byte < 0x20 or byte == 0x7f for byte in request_line):
+                return
+            words = request_line.decode('ascii').split(' ')
+            if len(words) != 2 or words[0] != 'GET' or not words[1]:
                 return
             path = target_file(self.server.root, words[1])
             with path.open('rb') as file:
@@ -119,7 +157,6 @@ class HTTP10Handler(socketserver.StreamRequestHandler):
                 if request is None:
                     return
                 method, target, keep = request
-                self.server.logger.record(method, self.client_address)
                 # Jede Anfrage erhält einen eigenen Worker. Auf derselben Verbindung
                 # warten wir vor dem nächsten Request auf die vollständige Antwort.
                 result = []
@@ -144,7 +181,12 @@ class HTTP10Handler(socketserver.StreamRequestHandler):
                     self.wfile.write(body)
                 if not keep:
                     return
-        except (OSError, UnicodeError, ValueError):
+        except UnicodeError:
+            try:
+                self.error('400 Bad Request')
+            except OSError:
+                return
+        except (OSError, ValueError):
             return
 
     def error(self, status):
@@ -158,11 +200,23 @@ class HTTP10Handler(socketserver.StreamRequestHandler):
         if len(line) > 8192 or not line.endswith(b'\r\n'):
             self.error('400 Bad Request')
             return None
-        words = line[:-2].decode('ascii').split()
-        if len(words) != 3 or words[2] not in ('HTTP/1.0', 'HTTP/1.1'):
+        request_line = line[:-2]
+        if any(byte < 0x20 or byte == 0x7f for byte in request_line):
+            self.error('400 Bad Request')
+            return None
+        words = request_line.decode('ascii').split(' ')
+        if (len(words) != 3 or not all(words) or words[2] not in ('HTTP/1.0', 'HTTP/1.1') or
+                re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", words[0]) is None):
             self.error('400 Bad Request')
             return None
         method, target, version = words
+        if self.server.logger is not None:
+            try:
+                self.server.logger.record(method, self.client_address)
+            except RuntimeError:
+                self.error('500 Internal Server Error')
+                self.server.shutdown()
+                return None
         headers = {}
         size = len(line)
         while True:
@@ -176,6 +230,9 @@ class HTTP10Handler(socketserver.StreamRequestHandler):
             name, sep, value = line[:-2].partition(b':')
             token = b"!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             if not sep or not name or any(c not in token for c in name):
+                self.error('400 Bad Request')
+                return None
+            if any((c < 0x20 and c != 0x09) or c == 0x7f for c in value):
                 self.error('400 Bad Request')
                 return None
             key = name.decode('ascii').lower()
@@ -199,11 +256,33 @@ class HTTPServer(socketserver.TCPServer):
         if not self.root.is_dir():
             raise ValueError('document root must be a directory')
         self.logger = logger
+        self._logger_failed = threading.Event()
         super().__init__(address, handler)
+        if logger is not None:
+            logger.set_error_callback(self._handle_logger_error)
+
+    def _handle_logger_error(self):
+        self._logger_failed.set()
+
+    def _raise_if_logger_failed(self):
+        if self._logger_failed.is_set():
+            raise RuntimeError('Logger-Thread ist fehlgeschlagen')
+
+    def get_request(self):
+        self._raise_if_logger_failed()
+        return super().get_request()
+
+    def service_actions(self):
+        self._raise_if_logger_failed()
+
+    def serve_forever(self, poll_interval=0.5):
+        self._raise_if_logger_failed()
+        return super().serve_forever(poll_interval)
 
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
-    daemon_threads = True
+    daemon_threads = False
+    block_on_close = True
 
 
 def main():

@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.1): „Schreiben Sie ein Python-Programm hello.py, das Ihren Namen, die verwendete Python-Version und das aktuelle Arbeitsverzeichnis ausgibt.“
+
+
 import argparse
 import os
 import platform

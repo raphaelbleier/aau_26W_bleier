@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.2): „Erstellen Sie ein Programm, das eine Zeichenkette einliest und diese zunächst als UTF-8 in Bytes kodiert. Geben Sie anschließend sowohl die Zeichenkette als auch die Bytefolge aus. Erweitern Sie das Programm, dass die Bytefolge wieder in eine Zeichenkette dekodiert wird.“
+
+
 import argparse
 
 

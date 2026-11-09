@@ -17,7 +17,7 @@
 \newif\ifexplain
 \ifnum\explainmode=1 \explaintrue\fi
 \newcommand{\aufgabe}[1]{\section*{Aufgabe #1}}
-\newcommand{\angabe}[1]{\textit{#1}\par\smallskip}
+\newcommand{\angabe}[1]{{\raggedright\textit{#1}\par}\smallskip}
 \newcommand{\why}[1]{\text{\small\color{black!65}#1}}
 \newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,title={Erklärung}}
 \newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
@@ -26,10 +26,10 @@
 \begin{center}
 {\Large Übungsblatt 02: Anwendungsschicht und Wireshark}\\
 Rechnernetze und Netzwerkprogrammierung, WS 2026/27\\
-Raphael Bleier, Gruppe YY\\
+Raphael Bleier, Devis, Fabio, Gruppe 1\\
 \ifexplain Erklärung\else Lösung\fi
 \end{center}
-Die Nummerierung folgt der Angabe. Dort fehlt 2.3. Gruppe YY und das Haus in 2.7 sind Platzhalter. Die untersuchten Mitschnitte stammen aus dem Moodle-Kurs, nicht aus einem privaten Heimnetz.
+Die Nummerierung folgt der Angabe. Dort fehlt 2.3. Die Angaben in 2.7 beschreiben Raphaels Keller-Netz; zu den Moodle-Mitschnitten für 2.10–2.12 kommt in Aufgabe 2.10 die eigene UDP-Aufzeichnung dazu.
 
 \aufgabe{2.1}
 \angabe{Beschreiben Sie die Architektur des heutigen Internets und seine Zugangsmöglichkeiten.}
@@ -89,20 +89,22 @@ ATM/1 ist ein fiktiver Entwurf, kein veröffentlichter Bankstandard. MUST bedeut
 \subsection*{Transport und Nachrichtenformat}
 Die Verbindung MUST TLS mit beidseitiger Zertifikatsprüfung verwenden. Eine Nachricht besteht aus einer vier Byte langen vorzeichenlosen Big-Endian-Länge und genau so vielen UTF-8-Bytes eines JSON-Objekts. Die Länge MUST höchstens 4096 Byte betragen. Der Empfänger MUST Header und Inhalt vollständig einlesen, bevor er JSON verarbeitet. Doppelte JSON-Schlüssel und unbekannte Nachrichtentypen werden abgewiesen.
 
-Jede Anfrage enthält \texttt{v}, \texttt{type} und eine eindeutige \texttt{request\_id}; nach Anmeldung zusätzlich \texttt{session}. Jede Antwort wiederholt die Anfragekennung und enthält \texttt{status}. \texttt{v} MUST den Wert 1 haben. Eine Sitzungskennung ist kurzlebig, zufällig und an das authentifizierte Gerät gebunden.
+Jede Anfrage enthält \texttt{v}, \texttt{type} und eine zufällige, 128 Bit lange und pro logischem Befehl neu erzeugte \texttt{request\_id}; normale Befehle nach Anmeldung zusätzlich \texttt{session}. Jede Antwort wiederholt die Anfragekennung und enthält \texttt{status}. \texttt{v} MUST den Wert 1 haben. Bei \texttt{AUTH} dient die Kennung als Frischewert für den Kartenchip; eine identische Wiederholung mit demselben Inhalt erhält die gespeicherte Antwort, dieselbe Kennung mit verändertem Inhalt wird abgewiesen. Eine Sitzungskennung ist kurzlebig und an das authentifizierte Gerät gebunden; die Wiederaufnahme gespeicherter Abhebungen nach Sitzungsablauf ist unten geregelt.
 \subsection*{Nachrichten und Zustände}
 \begin{description}[style=nextline]
-\item[AUTH:] Felder \texttt{card\_token}, \texttt{pin\_block}. Die Karte wird über eine opaque Kennung identifiziert. Der PIN-Block wird im gesicherten PIN-Pad erzeugt und vom Bank-HSM geprüft; ein Kartenbesitznachweis gehört zur Kartenprüfung. Eine PIN darf weder im Klartextfeld noch im Log stehen. Antwort: \texttt{OK} mit Sitzung oder \texttt{AUTH\_FAILED}/\texttt{CARD\_BLOCKED}. Fehlversuche werden begrenzt.
+\item[AUTH:] Felder \texttt{card\_token}, \texttt{pin\_block}. \texttt{card\_token} ist ein einmaliger kryptographischer Nachweis des Kartenchips, gebunden an die Anfragekennung und das authentisierte Terminal; das Bank-HSM prüft ihn. Der PIN-Block wird im gesicherten PIN-Pad erzeugt und ebenfalls vom HSM geprüft. Eine PIN darf weder im Klartextfeld noch im Log stehen. Antwort: \texttt{OK} mit Sitzung oder \texttt{AUTH\_FAILED}/\texttt{CARD\_BLOCKED}. Fehlversuche werden begrenzt.
 \item[BALANCE:] Liefert den verfügbaren Betrag in Cent und die Währung. Nur im authentifizierten Zustand erlaubt. \texttt{SESSION\_EXPIRED} beendet die Sitzung.
 \item[WITHDRAW\_PREPARE:] Felder \texttt{transaction\_id}, \texttt{amount\_cents}, \texttt{currency}. Bank und Automat prüfen Limit, gültigen Betrag und Auszahlbarkeit; die Bank prüft die verfügbare Deckung atomar mit einer Reservierung. Antwort \texttt{RESERVED}, \texttt{INSUFFICIENT\_FUNDS}, \texttt{LIMIT\_EXCEEDED} oder \texttt{INVALID\_AMOUNT}. Bei Ablehnung wird kein Bargeld ausgegeben und nichts belastet.
 \item[WITHDRAW\_COMMIT:] Nach bestätigter Bargeldausgabe meldet der Automat dieselbe Transaktionskennung und das Ausgaberesultat. Die Bank verbucht die Reservierung genau einmal und antwortet \texttt{COMMITTED} mit dem neuen verfügbaren Betrag.
 \item[WITHDRAW\_CANCEL:] Vor der Ausgabe oder nach eindeutig bestätigter Nichtausgabe wird die Reservierung freigegeben. Bereits verbuchte Transaktionen dürfen nicht dadurch rückgängig gemacht werden.
-\item[STATUS:] Liefert für dieselbe Transaktionskennung \texttt{RESERVED}, \texttt{COMMITTED}, \texttt{CANCELLED} oder \texttt{UNKNOWN}. Der Automat fragt damit nach einem Verbindungsabbruch nach.
+\item[STATUS:] Liefert für dieselbe Transaktionskennung \texttt{RESERVED}, \texttt{COMMITTED}, \texttt{CANCELLED} oder \texttt{UNKNOWN}. Eine unbekannte Kennung erhält auch bei \texttt{WITHDRAW\_COMMIT} und \texttt{WITHDRAW\_CANCEL} die Antwort \texttt{UNKNOWN}; Kontostand und Reservierungen bleiben unverändert. Der Automat fragt damit nach einem Verbindungsabbruch nach.
 \item[LOGOUT:] Invalidiert die Sitzung. Die Karte wird zurückgegeben, sofern keine Sperrregel greift.
 \end{description}
 \explain{Reservieren verhindert, dass zwei Automaten denselben verfügbaren Betrag gleichzeitig ausgeben. Die eigentliche Bargeldausgabe ist aber kein Datenbankbefehl. Deshalb braucht der Ablauf einen dauerhaften Gerätezustand und eine Klärung bei einem Abbruch.}
 \subsection*{Wiederholungen und Fehlerfälle}
-Die Bank MUST die Transaktionskennung zusammen mit Betrag, Währung und Gerät dauerhaft speichern. Eine wiederholte Anfrage mit denselben Daten liefert den gespeicherten Zustand. Dieselbe Kennung mit anderem Betrag wird als Konflikt zurückgewiesen. Der Automat MUST vor dem Ausgeben einen dauerhaften Journaleintrag schreiben und darf nach einem Timeout nicht einfach erneut Bargeld ausgeben.
+Die Bank MUST für jede Kombination aus Gerät und \texttt{request\_id} Befehlsinhalt und Antwort speichern, damit ein Transport-Retry mit identischem Inhalt dieselbe Antwort erhält, ohne den Befehl nochmals auszuführen. Dieselbe Kennung mit verändertem Inhalt wird als \texttt{REQUEST\_ID\_CONFLICT} abgewiesen. Pro Abhebung erzeugt der Automat eine neue zufällige \texttt{transaction\_id}; sie bleibt für \texttt{WITHDRAW\_PREPARE}, \texttt{WITHDRAW\_COMMIT}, \texttt{WITHDRAW\_CANCEL} und \texttt{STATUS} gleich. Jeder neue Befehl erhält eine neue \texttt{request\_id}. Die Bank MUST den PREPARE-Auftrag dauerhaft an das Konto der authentisierten Sitzung, den Betrag, die Währung und das gegenseitig authentisierte Gerät binden. Diese Kontobindung bleibt nach Ablauf der Sitzung unverändert. Ein erneutes PREPARE mit derselben Transaktionskennung und denselben Daten liefert den gespeicherten Zustand; abweichendes Konto, Gerät, Betrag oder Währung wird als \texttt{TRANSACTION\_CONFLICT} zurückgewiesen. COMMIT ist nur für \texttt{RESERVED} zulässig; nach bereits erfolgtem COMMIT liefert die Bank wieder \texttt{COMMITTED}, nach CANCEL \texttt{ALREADY\_CANCELLED}. CANCEL ist nur für \texttt{RESERVED} zulässig; nach bereits erfolgtem CANCEL liefert die Bank wieder \texttt{CANCELLED}, nach COMMIT \texttt{ALREADY\_COMMITTED}. STATUS liest den aktuellen Zustand. Der Automat MUST vor dem Ausgeben einen dauerhaften Journaleintrag schreiben und darf nach einem Timeout nicht einfach erneut Bargeld ausgeben. Der Eintrag bindet die Transaktion an das durch TLS authentisierte Gerät.
+
+\texttt{STATUS}, \texttt{WITHDRAW\_COMMIT} und \texttt{WITHDRAW\_CANCEL} für eine bereits gespeicherte Transaktion benötigen keine noch gültige Nutzersitzung; sie werden nur über dasselbe gegenseitig authentisierte Gerät und mit dessen gespeicherter Transaktionskennung akzeptiert. Nach Sitzungsablauf sind neue Kontostandsabfragen und Abhebungen gesperrt, eine offene Auszahlung lässt sich aber weiterhin klären.
 
 Bei unklarem Ausgaberesultat geht die Transaktion in manuelle oder gerätegestützte Klärung. Eine Reservierung wird dann nicht blind freigegeben. Bei sicherer Nichtausgabe kann sie storniert werden. Geht nur die Commit-Antwort verloren, liefert STATUS den bereits verbuchten Zustand. TLS schützt den Kanal, ersetzt diese Regeln aber nicht.
 \subsection*{Fehlerfreier Beispielablauf}
@@ -140,25 +142,26 @@ B_{\mathrm{neu}}+A&=5000+5000 &&\why{neuen Bestand und Auszahlung einsetzen}\\
 
 \aufgabe{2.7}
 \angabe{Entwerfen Sie ein Heimnetz mit IEEE 802.11 und nennen Sie Produktmodelle samt Kosten.}
-Ich plane ein fiktives Haus mit Erdgeschoss und Obergeschoss. Ein Internetanschluss mit Ethernet-Übergabe, eine LAN-Leitung zwischen den Stockwerken und die Endgeräte sind vorhanden. Damit werden keine tatsächlichen Wohnverhältnisse vorausgesetzt.
+Im Keller liegen Wohnzimmer und Schlafzimmer. Der Provider-5G-Router läuft im Bridge-Modus; der UniFi Gateway Ultra übernimmt die Routerfunktion. Im Kellerschlafzimmer steht ein kleiner 8-Port-UniFi-Switch. Für die geplante WLAN-Abdeckung beider Räume ist ein UniFi-Access-Point vorgesehen; ob bereits ein passendes Gerät vorhanden ist, wurde nicht bestätigt. Weitere Stockwerke müssen nicht abgedeckt werden. Die genauen Modellnummern von Switch und Access-Point sind nicht bekannt.
 
-Im Erdgeschoss arbeitet ein TP-Link Archer AX55 als Router und WLAN-Access-Point. Im Obergeschoss verwende ich einen TP-Link RE705X im Access-Point-Modus am Ethernet-Kabel. Beide unterstützen IEEE 802.11ax (Wi-Fi 6) auf 2,4 und 5 GHz. Der kabelgebundene Uplink vermeidet, dass der Verkehr zwischen den Stockwerken nochmals über denselben Funkkanal muss. Ein Mesh-Modus ist dafür nicht notwendig. DHCP läuft nur auf dem Router, der zweite Access Point arbeitet als Bridge.
+\begin{center}\small
+\texttt{5G-Router (Bridge)} $\rightarrow$ \texttt{Gateway Ultra (Router)}\\
+$\rightarrow$ \texttt{8-Port-Switch (Kellerschlafzimmer)} $\rightarrow$ \texttt{UniFi-AP (Keller)}
+\end{center}
 
-Die Geräte stehen möglichst zentral und frei, nicht im geschlossenen Schaltschrank. Auf 2,4 GHz verwende ich schmale, nicht überlappende Kanäle nach einer Belegungsprüfung; auf 5 GHz ebenfalls unterschiedliche zulässige Kanäle. WPA3-Personal wird aktiviert, soweit alle Endgeräte es unterstützen; sonst ein begründeter WPA2-AES-Kompatibilitätsbetrieb. WPS wird nach Einrichtung deaktiviert, Firmware aktualisiert und der Administrationszugang geschützt. Ein Gastnetz wird nur mit tatsächlich geprüfter Isolation eingeschaltet. Reale Abdeckung und Durchsatz müssen vor Ort gemessen werden; AX3000 ist eine aggregierte PHY-Klasse und keine garantierte Anwendungsdatenrate.
+Für die Modellliste setze ich den bestätigten Gateway Ultra (UCG-Ultra) sowie als Beispiele den UniFi Lite 8 PoE (USW-Lite-8-PoE) und den U6+ als Access-Point an. Die letzten beiden Modellnummern sind nicht als vorhandene Geräte bestätigt. Der U6+ unterstützt IEEE 802.11ax (Wi-Fi 6) auf 2,4 und 5 GHz. Der Lite 8 PoE hat acht Gigabit-Ports, davon vier PoE+-Ports mit insgesamt 52 W; das reicht für den U6+ mit PoE-Versorgung. Der Entwurf setzt eine Ethernet-Verbindung vom Switch zum Access-Point voraus. Ob ein passendes Kabel vorhanden ist, wurde nicht bestätigt. Ohne PoE-fähigen Bestandsswitch braucht es entweder einen PoE-Injektor oder einen passenden Switch.
 
-Preisbeispiele, Recherche am 19.10.2026: Archer AX55 65,46 EUR (ein konkret angezeigtes Geizhals-Angebot), RE705X ab 78,50 EUR laut Preisvergleich. Beim RE705X sind einzelne Händlerstände älter; Verfügbarkeit und endgültiger Warenkorbpreis sind vor Kauf erneut zu prüfen. Versand, Anschlussgebühr und vorhandene Verkabelung sind nicht eingerechnet.
+Der Access-Point kommt möglichst frei und zwischen den beiden Räumen an die Decke oder Wand. 2,4 und 5 GHz werden nach einer Kanalprüfung eingerichtet; WPA3-Personal wird verwendet, sofern alle Endgeräte es unterstützen. Der tatsächliche Empfang und Durchsatz sind vor Ort zu messen. Eine Hersteller-Abdeckungsangabe ersetzt diese Messung nicht.
+
+Preisstand 19.10.2026: Der Provider-5G-Router ist ein vorhandenes Providergerät; das genaue Modell ist unbekannt und wird nicht als Neukauf angesetzt (0 EUR zusätzliche Hardwarekosten, laufende Vertragsgebühren nicht eingerechnet). Der vorhandene UCG-Ultra ist bei TPtoner mit 118,36 EUR inklusive MwSt. gelistet (118,84 EUR Listenpreis, jeweils zuzüglich Versand). Dieser Preis ist nur ein Referenzwert und wird nicht als zusätzlicher Kauf angesetzt. Als Beispiele kosten der USW-Lite-8-PoE bei Reichelt 125,06 EUR inklusive MwSt. zuzüglich Versand und der U6+ bei Proshop 118,86 EUR inklusive MwSt. zuzüglich 6,99 EUR Versand. Reichelt nennt Versandkosten ab 6,95 EUR. Preise und Lagerstand können sich ändern.
+
+Ist ein geeigneter Access-Point bereits vorhanden, braucht es keinen Neukauf. Für ein neu benötigtes Beispielgerät ergeben sich 125,85 EUR inklusive Versand. Kann der Bestandsswitch den AP nicht mit PoE versorgen, ist entweder ein Injektor oder ein Ersatzswitch nötig. Mit Ersatzswitch und neuem AP ergeben die Beispielpreise 243,92 EUR vor Versand. Das ist kein bestätigter Kaufbedarf: Vorhandensein des AP, Switchmodell und PoE-Fähigkeit sind nicht verifiziert. Verkabelung, Montage und ein möglicher separater Injektor sind nicht eingerechnet.
 \begin{align*}
-K&=K_{\mathrm{Router}}+K_{\mathrm{AP}} &&\why{je ein Gerät}\\
-K&=65{,}46+78{,}50 &&\why{Preisbeispiele einsetzen}\\
-K&=143{,}96\,\mathrm{EUR} &&\why{Addition}
+K_{\mathrm{AP}}&=118{,}86+6{,}99=125{,}85\,\mathrm{EUR} &&\why{Access-Point samt Versand}\\
+K_{\mathrm{Switch+AP}}&=125{,}06+118{,}86=243{,}92\,\mathrm{EUR} &&\why{Hardwarepreise vor Versand}
 \end{align*}
-Probe:
-\begin{align*}
-K-K_{\mathrm{AP}}&=143{,}96-78{,}50 &&\why{Gesamtkosten und AP einsetzen}\\
-&=65{,}46\,\mathrm{EUR} &&\why{entspricht dem Routerpreis}
-\end{align*}
-\explain{Der RE705X wird als Access Point betrieben, nicht als Funk-Repeater. Das ist ein wichtiger Unterschied: Ein Repeater muss die Daten über Funk weiterreichen, ein verkabelter Access Point bekommt sie über Ethernet. Der Ansatz setzt die ausdrücklich angenommene LAN-Leitung voraus.}
-\[\boxed{\text{Router und verkabelter Wi-Fi-6-AP: Preisbeispiel 143,96 EUR ohne Versand.}}\]
+\explain{Der Lite 8 PoE hat laut Hersteller vier PoE+-Ports und ein Budget von 52 W; der U6+ benötigt laut Hersteller 9 W. Das Beispiel kann den Access-Point daher versorgen. Ob der vorhandene Switch dasselbe kann, ist nicht bekannt. Der UCG-Ultra ist bereits vorhanden und wird in den möglichen Zusatzkosten nicht noch einmal eingerechnet.}
+\[\boxed{\text{Keller: 5G-Bridge, Router, Switch und AP; Zusatzkosten nach PoE-Bestand.}}\]
 
 \aufgabe{2.8}
 \angabe{Was ist Streaming gespeicherter Videos? Nennen Sie bekannte Websites und recherchieren Sie die Funktionsweise.}
@@ -208,7 +211,7 @@ S: 250 Message accepted
 C: QUIT
 S: 221 Bye
 \end{lstlisting}
-POP3 (RFC 1939) dient dem Abruf einer Mailbox: Nach der Begrüßung folgt AUTHORIZATION, nach erfolgreicher Anmeldung TRANSACTION und bei QUIT schließlich UPDATE. USER/PASS sind eine mögliche Anmeldung, STAT und LIST liefern Übersicht, RETR holt eine Nachricht. DELE markiert sie, erst UPDATE löscht sie endgültig. Beim Verbindungsabbruch ohne QUIT wird nicht einfach gelöscht. Eine mehrzeilige Antwort endet mit einer Punktzeile; Dot-Stuffing unterscheidet Inhalt davon. Ohne zusätzlichen TLS-Schutz sind Kennwort und Inhalte nicht vertraulich. Das Liegenlassen von Nachrichten ist möglich; POP3 bedeutet nicht zwingend sofortiges Löschen.
+POP3 (RFC 1939) dient dem Abruf einer Mailbox: Nach der Begrüßung folgt AUTHORIZATION. Nach erfolgreicher Anmeldung folgt TRANSACTION; ein QUIT aus TRANSACTION führt nach UPDATE und löscht markierte Nachrichten endgültig. QUIT während AUTHORIZATION beendet die Verbindung ohne UPDATE. USER/PASS sind eine mögliche Anmeldung, STAT und LIST liefern Übersicht, RETR holt eine Nachricht. DELE markiert sie, erst UPDATE löscht sie endgültig. Beim Verbindungsabbruch ohne QUIT wird nicht einfach gelöscht. Eine mehrzeilige Antwort endet mit einer Punktzeile; Dot-Stuffing unterscheidet Inhalt davon. Ohne zusätzlichen TLS-Schutz sind Kennwort und Inhalte nicht vertraulich. Das Liegenlassen von Nachrichten ist möglich; POP3 bedeutet nicht zwingend sofortiges Löschen.
 
 IMAP4rev2 (RFC 9051) verwaltet Nachrichten serverseitig mit Ordnern, Flags, Suche und selektivem Abruf. Dadurch lassen sich mehrere Geräte besser synchronisieren. Befehle sind getaggt; neben der zugeordneten Abschlussantwort kann der Server ungetaggte Daten liefern. POP3 ist einfacher auf den Mailboxabruf ausgelegt, IMAP auf dauerhafte serverseitige Verwaltung. Auch IMAP braucht TLS für Vertraulichkeit.
 \subsection*{DNS}
@@ -226,7 +229,7 @@ Die Paketliste zeigt pro Frame Zeit, Endpunkte, Protokoll, Länge und eine Kurzb
 
 Ein Capture-Filter wie \texttt{tcp port 80} verwendet die Capture/BPF-Syntax und entscheidet vor dem Speichern. Ein Display-Filter wie \texttt{http.request}, \texttt{tcp.port == 80} oder \texttt{tcp.stream eq 0} blendet bereits gespeicherte Frames aus, löscht sie aber nicht. Display- und Capture-Filter sind nicht austauschbar. \texttt{http} zeigt insbesondere nicht automatisch jedes TCP-Segment einer großen HTTP-Antwort, weil die HTTP-Zerlegung erst nach Reassemblierung vollständig sein kann.
 
-Für eine eigene Aufzeichnung habe ich ausschließlich selbst erzeugte UDP-Testdatagramme auf der Loopback-Schnittstelle erfasst. Der Empfänger wurde zuerst lokal gebunden. Danach wurde tcpdump mit einem Filter auf dessen UDP-Port gestartet; erst nach der Bereitschaftsmeldung wurden drei Nachrichten mit je zwölf Nutzdatenbytes gesendet und empfangen. Die Aufzeichnung wurde sauber beendet und mit TShark eingelesen. Ergebnis: drei UDP-Datagramme, jeweils UDP-Länge 20 Byte einschließlich des acht Byte langen UDP-Headers. Der Mitschnitt enthält keinen fremden Netzwerkverkehr. Bei einer eigenen GUI-Aufzeichnung wählt man entsprechend die richtige Schnittstelle, setzt den Capture-Filter, startet die Aufnahme, erzeugt Testverkehr und stoppt sowie speichert die Aufnahme.
+Für eine eigene Aufzeichnung habe ich drei UDP-Testdatagramme über Loopback gesendet. Der Empfänger war zuerst auf \texttt{127.0.0.1:37477} gebunden. Danach startete \texttt{tcpdump} auf \texttt{any} mit dem Capture-Filter \texttt{udp port 37477}; erst nach der Bereitschaftsmeldung wurden drei Nachrichten mit je zwölf Nutzdatenbytes gesendet und empfangen. TShark hat die gespeicherte Aufzeichnung \texttt{capture-own-udp.pcap} eingelesen: genau drei Frames, jeweils UDP-Länge 20 Byte einschließlich des acht Byte langen UDP-Headers. Der Filter ließ keinen anderen Netzwerkverkehr in die Datei. Bei einer eigenen GUI-Aufzeichnung wählt man entsprechend die richtige Schnittstelle, setzt den Capture-Filter, startet die Aufnahme, erzeugt Testverkehr und stoppt sowie speichert die Aufnahme.
 
 Promiscuous Mode lässt eine Netzwerkkarte auch empfangene Frames an das Betriebssystem weitergeben, deren Ziel-MAC nicht die eigene ist. Ein Switch leitet fremden Unicast dadurch nicht automatisch an diesen Port. Für dessen Sichtbarkeit braucht es etwa einen Mirror-Port. Bei WLAN ist Promiscuous Mode außerdem nicht mit Monitor Mode gleichzusetzen. Auf Loopback spielt das Filtern nach einer physischen Ziel-MAC keine Rolle.
 \explain{Ein Display-Filter wirkt wie eine Ansicht auf vorhandene Daten. Wenn der Capture-Filter ein Paket gar nicht gespeichert hat, kann ein späterer Display-Filter es nicht zurückholen. Die eigene Aufzeichnung wurde deshalb absichtlich eng begrenzt. TShark überprüft den tatsächlichen Mitschnitt; die GUI zeigt ergänzend, welche Felder zu den beiden HTTP-Nachrichten gehören.}
@@ -274,7 +277,7 @@ N_{\mathrm{UDP}}&=3+6 &&\why{DHCP plus DNS}\\
 \[\boxed{\text{Ethernet, ARP, IPv4, ICMP, UDP, TCP, DHCP, DNS und HTTP.}}\]
 
 \aufgabe{2.12}
-\angabe{Analysieren Sie dump\_http.pcap: Objekte, Header, TCP-Verbindungsanzahl im Vergleich zu dump\_protocols.pcap sowie Bytes und Dauer jeder Verbindung.}
+\angabe{Analysieren Sie dump\_http.pcap: Objekte, Header, TCP-Verbindungen, Bytezahlen und Dauer; vergleichen Sie mit dump\_protocols.pcap.}
 \subsection*{Objekte und Verbindungen}
 Es werden drei Objekte mit GET angefordert: \texttt{/test/} (HTML-Dokument, 145 Byte Inhalt), \texttt{/test/logo.gif} (4445 Byte) und \texttt{/test/TechnikErleben.png} (27065 Byte). Die HTML-Seite referenziert die beiden Bilder. Die Requests sind HTTP/1.0, die Statuszeilen der Antworten HTTP/1.1 200 OK. Das allein bedeutet noch keine persistente Nutzung: Die Antworten enthalten hier \texttt{Connection: close}.
 
@@ -325,17 +328,17 @@ Zusätzlich habe ich \texttt{dump\_http\_persistent.pcap} untersucht. Dort laufe
 \explain{Zum Gruppieren reicht ein Port allein nicht allgemein aus. Die Prüfung verwendet beide Endpunkte samt Ports; bei wiederverwendeten Verbindungen müsste zusätzlich der TCP-Lebenszyklus unterschieden werden. In diesen Dateien gibt es pro Endpunktepaar genau einen vollständigen Aufbau und Abbau. Die tabellierten Clientports dienen nur als kurze Bezeichnungen.}
 \[\boxed{\text{dump\_http: 3 TCP-Verbindungen; dump\_protocols: 1 TCP-Verbindung.}}\]
 
-\section*{Quellen und Kennzeichnung}
-Kursunterlagen: Übungsblatt 02 (beide Seiten), RN-Aufnahme-KH (Schichten, Modalitäten und KI-Kennzeichnung), rn-chapter-1 (Rand/Zugang/Kern, Schichten und Kapselung), ISO/IEC 7498-1:1994. Die drei PCAP-Dateien wurden aus dem Moodle-Ordner PCAP Files gelesen. Originalunterlagen und Mitschnitte werden nicht mitveröffentlicht.
+\section*{Quellen und Messgrundlage}
+Kursunterlagen: Übungsblatt 02 (beide Seiten), RN-Aufnahme-KH (Seiten 6 und 18), rn-chapter-1 (Seiten 3--15, 27--32 und 36--39) sowie rn-chapter-2 (Seiten 10--24, 30--37 und 42--51). Die drei Kurs-PCAP-Dateien wurden aus dem Moodle-Ordner PCAP Files gelesen; sie werden nicht mitveröffentlicht. Die eigene UDP-Aufzeichnung liegt als \texttt{capture-own-udp.pcap} bei.
 
 Nachgelesene öffentliche Quellen (Abruf 19.10.2026):
 \begin{itemize}[nosep]
-\item HTTP: \url{https://www.rfc-editor.org/rfc/rfc1945}, \url{https://www.rfc-editor.org/rfc/rfc9110}, \url{https://www.rfc-editor.org/rfc/rfc9112}, \url{https://www.rfc-editor.org/rfc/rfc9113}, \url{https://www.rfc-editor.org/rfc/rfc9114}, QUIC: \url{https://www.rfc-editor.org/rfc/rfc9000}.
-\item Mail/DNS: \url{https://www.rfc-editor.org/rfc/rfc5321}, \url{https://www.rfc-editor.org/rfc/rfc1939}, \url{https://www.rfc-editor.org/rfc/rfc9051}, \url{https://www.rfc-editor.org/rfc/rfc1034}, \url{https://www.rfc-editor.org/rfc/rfc1035}.
-\item Streaming: \url{https://www.rfc-editor.org/rfc/rfc8216}, \url{https://developer.apple.com/streaming/}, \url{https://openconnect.netflix.com/en/}.
-\item Geräte: \url{https://www.tp-link.com/de/home-networking/wifi-router/archer-ax55/}, \url{https://www.tp-link.com/de/home-networking/range-extender/re705x/}.
-\item Preisbeispiele: \url{https://geizhals.at/tp-link-archer-ax55-a2600058.html}, \url{https://geizhals.at/tp-link-re705x-re705x-a2859749.html}.
-\item Bedienung/Filter: \url{https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html}, \url{https://www.wireshark.org/docs/man-pages/tshark.html}.
+\item HTTP und QUIC: \href{https://www.rfc-editor.org/rfc/rfc1945}{RFC 1945}, \href{https://www.rfc-editor.org/rfc/rfc9110}{RFC 9110}, \href{https://www.rfc-editor.org/rfc/rfc9112}{RFC 9112}, \href{https://www.rfc-editor.org/rfc/rfc9113}{RFC 9113}, \href{https://www.rfc-editor.org/rfc/rfc9114}{RFC 9114} und \href{https://www.rfc-editor.org/rfc/rfc9000}{RFC 9000}.
+\item Mail und DNS: \href{https://www.rfc-editor.org/rfc/rfc5321}{RFC 5321}, \href{https://www.rfc-editor.org/rfc/rfc1939}{RFC 1939}, \href{https://www.rfc-editor.org/rfc/rfc9051}{RFC 9051}, \href{https://www.rfc-editor.org/rfc/rfc1034}{RFC 1034} und \href{https://www.rfc-editor.org/rfc/rfc1035}{RFC 1035}.
+\item Streaming: \href{https://www.rfc-editor.org/rfc/rfc8216}{RFC 8216}, \href{https://developer.apple.com/streaming/}{Apple HLS} und \href{https://openconnect.netflix.com/en/}{Netflix Open Connect}.
+\item Gerätedaten: UCG-Ultra, \href{https://techspecs.ui.com/unifi/cloud-gateways/ucg-ultra}{Ubiquiti}; \href{https://techspecs.ui.com/unifi/switching/usw-lite-8-poe}{USW-Lite-8-PoE} und \href{https://techspecs.ui.com/unifi/wifi/u6-plus}{U6+}.
+\item Preisbeispiele (Abruf 19.10.2026): \href{https://www.tptoner.at/ubiquiti-ucg-ultra-unifi-cloud-gateway-ultra-276901at/}{TPtoner}, \href{https://www.reichelt.at/at/de/shop/produkt/switch_8-port_gigabit_ethernet_poe_-338038}{Reichelt} und \href{https://www.proshop.at/Access-Points/Ubiquiti-UniFi-Access-Point-U6-Plus/3193266}{Proshop}.
+\item Bedienung und Filter: \href{https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html}{Wireshark User's Guide} und \href{https://www.wireshark.org/docs/man-pages/tshark.html}{TShark-Handbuch}.
 \end{itemize}
-Generative KI wurde zur Ausarbeitung und Prüfung verwendet: Hermes Agent v0.21.5 mit OpenAI-Modell \texttt{gpt-6.1-sol}, 19.10.2026. Die Kennzeichnung folgt den Aufnahmefolien der LV. Messwerte stammen aus tatsächlich ausgeführten Auswertungen. Der Protokollmitschnitt wurde auch in Wireshark geöffnet; die eigene lokale Aufzeichnung erfolgte über tcpdump/TShark. Das Bankprotokoll, das Haus und der SMTP-Dialog sind ausdrücklich Entwürfe beziehungsweise Beispiele, keine durchgeführten Bank-, Wohnungs- oder Mailserveraktionen.
+Messwerte stammen aus tatsächlich ausgeführten Auswertungen. Der Protokollmitschnitt wurde auch in Wireshark geöffnet; die eigene lokale Aufzeichnung erfolgte über tcpdump/TShark. Das Bankprotokoll und der SMTP-Dialog sind Entwürfe beziehungsweise Beispiele, keine durchgeführten Bank- oder Mailserveraktionen.
 \end{document}

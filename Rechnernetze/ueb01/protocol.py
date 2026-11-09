@@ -1,9 +1,10 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.4): „Die Nachricht besteht aus einem Versionsfeld V mit 5 Bit (fixer Wert 2), 9 reservierten Bits (immer 0), zwei Flags D und U, einer 16 Bit großen Sequenznummer und einer 32 Bit großen Payload-Länge. Anschließend folgt die eigentliche Nutzlast variabler Länge. Implementieren Sie eine Funktion create_message(is_data, is_urgent, sequence_number, payload), die eine solche Nachricht als bytes-Objekt erzeugt. Schreiben Sie außerdem eine zweite Funktion parse_message(message).“
+
+
 import argparse
 import struct
 
 VERSION = 2
+# Die Grafik zählt von links mit Bit 0; im Big-Endian-Wort ist das das höchste Feldbit.
 VERSION_SHIFT = 27
 DATA_SHIFT = 17
 URGENT_SHIFT = 16

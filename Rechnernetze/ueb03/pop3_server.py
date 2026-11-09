@@ -1,6 +1,5 @@
 """Ü 3.3: POP3-Laborserver, nur an Loopback betreiben.
 
-KI-Kennzeichnung: Hermes Agent v0.21.5, gpt-6.1-sol, 19.10.2026.
 Anfrage: Ü 3.3: Minimalen POP3-Server mit der bereitgestellten SampleDataBase
 und einem Thread pro Benutzer implementieren; mit echten Clients testen.
 """
@@ -157,7 +156,7 @@ class POPHandler(socketserver.StreamRequestHandler):
                 n = self.get_number(args[0])
                 head, sep, body = self.messages[n - 1][1].partition(b'\r\n\r\n')
                 lines = head.split(b'\r\n') + [b'']
-                if sep:
+                if sep and body:
                     lines += body[:-2].split(b'\r\n')[:int(args[1])]
                 self.reply('+OK top follows')
                 self.multi(lines)

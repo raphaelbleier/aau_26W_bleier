@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.5): „Implementieren Sie ein Programm, das eine Liste von Gleitkommazahlen aus einer Datei liest und eine rechenintensive Funktion auf den Werten ausführt. Die Berechnung soll auf n Threads aufgeteilt werden.“
+
+
 import argparse
 import math
 import threading

@@ -1,5 +1,6 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.4): „Testen Sie Ihre Implementierung mit gültigen und ungültigen Eingaben.“
+
+
+import os
 import subprocess
 import sys
 import tempfile
@@ -78,6 +79,21 @@ class ConvertTests(unittest.TestCase):
                 convert.convert_file(path, path)
             self.assertEqual(path.read_text(encoding="utf-8"), "Daten")
 
+    def test_hardlink_input_and_output_alias_is_rejected_without_loss(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.txt"
+            destination = Path(directory) / "alias.txt"
+            source.write_text("Daten", encoding="utf-8")
+            try:
+                os.link(source, destination)
+            except (NotImplementedError, OSError) as exc:
+                self.skipTest("Hardlinks sind hier nicht verfügbar: {}".format(exc))
+
+            with self.assertRaises(ValueError):
+                convert.convert_file(source, destination)
+            self.assertEqual(source.read_text(encoding="utf-8"), "Daten")
+            self.assertEqual(destination.read_text(encoding="utf-8"), "Daten")
+
     def test_missing_command_line_parameters_are_rejected(self):
         result = subprocess.run(
             [sys.executable, str(ROOT / "convert.py")],
@@ -95,6 +111,12 @@ class ProtocolTests(unittest.TestCase):
         message = protocol.create_message(True, False, 42, payload)
         self.assertEqual(message, bytes.fromhex("1002002a0000000a") + payload)
         self.assertEqual(protocol.parse_message(message), (True, False, 42, payload))
+
+    def test_version_and_sequence_fields_follow_bit_layout(self):
+        payload = b"12345678901"
+        message = protocol.create_message(False, False, 42, payload)
+        self.assertEqual(message, bytes.fromhex("1000002a0000000b") + payload)
+        self.assertEqual(protocol.parse_message(message), (False, False, 42, payload))
 
     def test_all_flag_combinations_and_max_sequence_number(self):
         for is_data in (False, True):
@@ -238,21 +260,30 @@ class ThreadedCalculationTests(unittest.TestCase):
 
 
 class ThreadSafetyTests(unittest.TestCase):
-    def test_lock_preserves_total_and_unsafe_update_loses_contributions(self):
+    def test_direct_run_is_measured_and_controlled_race_loses_contributions(self):
         values = [float(i) for i in range(1, 9)]
         expected = sum(threaded_calc.complicated_calculation(v, 5) for v in values)
         for attempt in range(5):
             with self.subTest(attempt=attempt):
                 safe = thread_safety.run_shared_sum(values, 4, use_lock=True, iterations=5)
-                unsafe = thread_safety.run_shared_sum(values, 4, use_lock=False, iterations=5)
+                direct = thread_safety.run_shared_sum(values, 4, use_lock=False, iterations=5)
+                controlled = thread_safety.run_shared_sum(
+                    values, 4, use_lock=False, iterations=5, force_lost_update=True
+                )
                 self.assertAlmostEqual(safe, expected)
-                self.assertLess(unsafe, expected)
+                self.assertIsInstance(direct, float)
+                self.assertLess(controlled, expected)
 
-    def test_invalid_iterations_and_values_fail_before_barrier(self):
+    def test_invalid_iterations_and_values_fail_before_workers(self):
         with self.assertRaises(ValueError):
-            thread_safety.run_shared_sum([1.0], 2, use_lock=False, iterations=0)
+            thread_safety.run_shared_sum(
+                [1.0], 2, use_lock=False, iterations=0, force_lost_update=True
+            )
         with self.assertRaises(TypeError):
-            thread_safety.run_shared_sum([1.0, "bad"], 2, use_lock=False, iterations=2)
+            thread_safety.run_shared_sum(
+                [1.0, "bad"], 2, use_lock=False, iterations=2,
+                force_lost_update=True
+            )
 
     def test_worker_exception_aborts_barrier_and_reaches_caller(self):
         script = (
@@ -262,7 +293,7 @@ class ThreadSafetyTests(unittest.TestCase):
             "side_effect=RuntimeError('worker failed'))\n"
             "patcher.start()\n"
             "try:\n"
-            "    thread_safety.run_shared_sum([1.0, 2.0], 2, use_lock=False, iterations=2)\n"
+            "    thread_safety.run_shared_sum([1.0, 2.0], 2, use_lock=False, iterations=2, force_lost_update=True)\n"
             "except RuntimeError as exc:\n"
             "    assert str(exc) == 'worker failed'\n"
             "else:\n"
@@ -292,7 +323,7 @@ class ThreadSafetyTests(unittest.TestCase):
             "    return original_start(thread)\n"
             "with mock.patch.object(threading.Thread, 'start', new=fail_second_start):\n"
             "    try:\n"
-            "        thread_safety.run_shared_sum([1.0, 2.0], 2, use_lock=False, iterations=2)\n"
+            "        thread_safety.run_shared_sum([1.0, 2.0], 2, use_lock=False, iterations=2, force_lost_update=True)\n"
             "    except RuntimeError as exc:\n"
             "        assert str(exc) == 'cannot start new thread'\n"
             "    else:\n"

@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.6): „Erweitern Sie das Programm aus Ü 1.5 so, dass alle Threads ein gemeinsames Ergebnis erzeugen. Schützen Sie anschließend den Zugriff auf die gemeinsame Variable mit einem geeigneten Synchronisationsmechanismus aus der Python-Standardbibliothek.“
+
+
 import argparse
 import threading
 
@@ -11,18 +11,24 @@ from threaded_calc import (
 )
 
 
-def run_shared_sum(values, number_of_threads, use_lock=True, iterations=20000):
-    """Addiert Teilergebnisse; ohne Lock macht eine Barriere den Race sichtbar."""
+def run_shared_sum(
+    values, number_of_threads, use_lock=True, iterations=20000, force_lost_update=False
+):
+    """Addiert Teilergebnisse direkt oder geschützt; ein Kontrolllauf erzwingt das Rennen."""
     values = validate_calculation_inputs(values, number_of_threads, iterations)
     if type(use_lock) is not bool:
         raise TypeError("use_lock muss bool sein.")
+    if type(force_lost_update) is not bool:
+        raise TypeError("force_lost_update muss bool sein.")
+    if use_lock and force_lost_update:
+        raise ValueError("force_lost_update funktioniert nur ohne Lock.")
     ranges = split_ranges(len(values), number_of_threads)
     shared_total = [0.0]
     lock = threading.Lock()
     errors = []
     errors_lock = threading.Lock()
-    # Im fehlerhaften Lauf lesen alle Threads zuerst denselben alten Wert.
-    read_barrier = threading.Barrier(number_of_threads) if not use_lock else None
+    # Der Kontrolllauf liest absichtlich vor einer Barriere denselben alten Wert.
+    read_barrier = threading.Barrier(number_of_threads) if force_lost_update else None
 
     def worker(start, end):
         try:
@@ -32,11 +38,13 @@ def run_shared_sum(values, number_of_threads, use_lock=True, iterations=20000):
             if use_lock:
                 with lock:
                     shared_total[0] += partial
-            else:
+            elif force_lost_update:
                 old_value = shared_total[0]
                 assert read_barrier is not None
                 read_barrier.wait()
                 shared_total[0] = old_value + partial
+            else:
+                shared_total[0] += partial
         except BaseException as exc:
             with errors_lock:
                 errors.append(exc)
@@ -88,8 +96,13 @@ def main():
             safe = run_shared_sum(
                 values, args.threads, use_lock=True, iterations=args.iterations
             )
-            print("Lauf {} ohne Lock: {:.6f}".format(attempt, unsafe))
-            print("Lauf {} mit Lock:  {:.6f}".format(attempt, safe))
+            controlled = run_shared_sum(
+                values, args.threads, use_lock=False,
+                iterations=args.iterations, force_lost_update=True
+            )
+            print("Lauf {} direkt ohne Lock: {:.6f}".format(attempt, unsafe))
+            print("Lauf {} mit Lock:          {:.6f}".format(attempt, safe))
+            print("Kontrolllauf mit Barriere: {:.6f}".format(controlled))
         print("Soll (sequenziell): {:.6f}".format(expected))
     except Exception as exc:
         parser.exit(1, "Fehler: {}\n".format(exc))

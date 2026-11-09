@@ -1,5 +1,5 @@
-# KI-Nutzung: Hermes Agent, OpenAI GPT-6 Luna (gpt-6-luna), 2026-10-12.
-# Verwendete Anfrage (Auszug aus Übung 1.7): „Verwenden Sie hierfür queue.Queue aus der Python-Standardbibliothek. Die Queue soll eine begrenzte Größe besitzen, sodass der Producer gegebenenfalls warten muss, wenn der Container voll ist.“
+
+
 import argparse
 import queue
 import threading

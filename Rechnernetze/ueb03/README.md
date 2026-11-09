@@ -1,12 +1,12 @@
 # Rechnernetze: Übungsblatt 03
 
-[Lösung und Testbericht](loesung_blatt03.pdf) · [Erklärung](erklaerung_blatt03.pdf) · [gemeinsame LaTeX-Quelle](blatt03.tex)
+[Lösung und Testbericht als PDF](loesung_blatt03.pdf) · [Erklärung als PDF](erklaerung_blatt03.pdf) · Kursvorgabe: KI-Nutzung ist zu kennzeichnen · [gemeinsame LaTeX-Quelle](blatt03.tex)
 
 Das Blatt enthält die Aufgaben 3.1 bis 3.5. Während der POP3-Client direkt mit Sockets arbeitet und die empfangenen Zeilen selbst auswertet, greift der POP3-Server über die vorgegebene Schnittstelle auf die Nachrichten der bereitgestellten Datenbank zu. Der HTTP-Server hat zwei getrennte Betriebsarten: sequentielles HTTP/0.9 und paralleles HTTP/1.0 mit Keep-Alive. Alle Programme brauchen nur die Python-Standardbibliothek.
 
 ## Starten
 
-Die Befehle gelten im Blattordner. Zuerst `SampleDataBase.py` und `documentRoot.zip` aus Moodle herunterladen, das ZIP in einen eigenen Ordner entpacken und beide außerhalb des Repos aufbewahren. Die Datenbank wird nicht nachgebaut oder als Lehrunterlage weiterveröffentlicht.
+Die Befehle gelten im Blattordner. Zuerst `SampleDataBase.py` und `document_root.zip` aus Moodle herunterladen, das ZIP in einen eigenen Ordner entpacken und beide außerhalb des Repos aufbewahren. Die Datenbank wird nicht nachgebaut oder als Lehrunterlage weiterveröffentlicht.
 
 ```bash
 # Terminal 1: Original-Datenbank über einen frei gewählten lokalen Pfad laden.
@@ -53,7 +53,7 @@ Die Nachrichtennummern werden beim Öffnen des Maildrops vergeben und bleiben in
 
 Zusätzlich zu den Mindestkommandos sind `CAPA`, `UIDL` und `TOP` vorhanden. `UIDL` bildet aus Original-ID und Nachricht einen stabilen Hash. `TOP` liefert Header und die gewünschte Zahl an Textzeilen. Diese Kommandos erleichtern die Zusammenarbeit mit einem echten Mailprogramm. Es werden nur tatsächlich implementierte Fähigkeiten angekündigt. Inaktive POP3-Verbindungen haben ein Timeout von 600 Sekunden.
 
-Für den GUI-Test wurde Claws Mail 4.3.1 mit einem frischen lokalen Profil verwendet. Konto: POP3, Server Loopback, Port 11110, Benutzer aus der Original-Datenbank, keine Verschlüsselung und keine Löschung nach dem Abruf. Nach „Get Mail“ erschienen alle vier Mails im Posteingang. Die erste Mail wurde geöffnet; Header und Nachrichtentext sind im [Screenshot](screenshots/pop3-claws.png) sichtbar. Es wurden keine echten Konten eingebunden. Unabhängig davon wurden Anmeldung, `LIST` und `RETR` mit dem eigenen Client sowie die zusätzlichen Kommandos mit `poplib` geprüft.
+Für den GUI-Test wurde Claws Mail 4.3.1 mit einem frischen lokalen Profil verwendet. Konto: POP3, Server Loopback, Port 11110, Benutzer aus der Original-Datenbank, keine Verschlüsselung und keine Löschung nach dem Abruf. Nach „Get Mail“ erschienen alle vier Mails im Posteingang. Die erste Mail wurde geöffnet; Header und Nachrichtentext sind im [Screenshot](screenshots/pop3-claws.png) sichtbar. Claws zeigt Größen von 158, 148, 179 und 173 B an (658 B gesamt); diese GUI-Werte weichen von den durch `LIST` gelieferten Octet-Zahlen ab und werden nicht als deren Nachweis verwendet. Es wurden keine echten Konten eingebunden. Unabhängig davon wurden Anmeldung, `LIST` und `RETR` mit dem eigenen Client sowie die zusätzlichen Kommandos mit `poplib` geprüft.
 
 ## Aufgabe 3.4
 
@@ -61,7 +61,7 @@ Im Modus `09` liest der Server nur `GET /pfad` mit CRLF. Ein Verzeichnis wird zu
 
 Vor dem Öffnen wird der URL-Pfad dekodiert und gegen das aufgelöste Basisverzeichnis geprüft. `..`, kodierte Traversal-Versuche, Nullbytes und Symlinks aus dem Basisverzeichnis werden abgefangen. Während des Betriebs dürfen nicht vertrauenswürdige Benutzer den document root nicht verändern, weil die Pfadprüfung kein Betriebssystem-Sandboxing ersetzt.
 
-Die mitgelieferten Dateien wurden tatsächlich mit Chromium 156.0.8078.4 und Firefox 157.0 getestet. Beide Browser senden aktuelle HTTP-Anfragen statt des alten Zweitoken-Formats. Der strikte HTTP/0.9-Modus schließt diese Anfragen daher ohne Antwort; die Webseite wird in beiden Browsern nicht korrekt angezeigt. Chromium meldete `ERR_EMPTY_RESPONSE`, Firefox im Navigationsaufruf `NS_ERROR_NET_RESET`. Die [Chromium-](screenshots/http09-chromium.png) und [Firefox-Aufnahmen](screenshots/http09-firefox.png) zeigen den Fehlschlag. Socket-Tests bestätigen dagegen die korrekten Dateibytes bei einer echten HTTP/0.9-Anfrage.
+Die Dateien wurden mit Headless Chromium 145.0.0.0 und Firefox Nightly getestet. Beide Browser senden aktuelle HTTP-Anfragen statt des alten Zweitoken-Formats. Der strikte HTTP/0.9-Modus schließt diese Anfragen ohne Antwort; die Webseite wird deshalb nicht korrekt angezeigt. Chromium meldete `ERR_EMPTY_RESPONSE`, Firefox `NS_ERROR_NET_EMPTY_RESPONSE`. Die [Chromium-](screenshots/http09-chromium.png) und [Firefox-Aufnahmen](screenshots/http09-firefox.png) zeigen den Fehlschlag. Socket-Tests bestätigen dagegen die korrekten Dateibytes bei einer echten HTTP/0.9-Anfrage.
 
 ## Aufgabe 3.5
 
@@ -71,15 +71,15 @@ Die Antwort trägt immer `HTTP/1.0`, `Content-Length`, `Content-Type` und `Conne
 
 Request-Bodies, Chunked-Encoding und doppelte Header werden abgelehnt. Fehlende Dateien erhalten 404, unzulässige Pfade 403 und nicht unterstützte Methoden 405. Diese bewusste Beschränkung vermeidet mehrdeutiges Framing auf einer persistenten Verbindung. Der Server ist ein Lehrbeispiel, kein produktiver Webserver mit vollständiger HTTP-Abdeckung oder Lastbegrenzung.
 
-Der Request-Handler schreibt Zeitstempel, Methode, Clientadresse und Clientport in eine threadsichere `queue.Queue`, während der Zugriff auf den Ausgabestrom ausschließlich beim Logger-Thread liegt, damit sich die Zeilen gleichzeitig eintreffender Anfragen beim Schreiben nicht ineinanderschieben. Er sammelt Einträge und gibt sie alle fünf Sekunden gemeinsam aus, beim regulären Beenden außerdem den letzten Rest. Passwörter, Header und URL-Parameter werden nicht geloggt.
+Der Request-Handler schreibt Zeitstempel, Methode, Clientadresse und Clientport in eine threadsichere `queue.Queue`, sobald die Request-Zeile syntaktisch gültig ist; auch bei danach abgelehnten Headern bleibt die Methode damit im Log. Den Ausgabestrom beschreibt nur der Logger-Thread, damit sich Einträge nicht vermischen. Er gibt sie alle fünf Sekunden gemeinsam aus und beim regulären Beenden auch den letzten Rest. Beim Schließen wartet der Server auf laufende Request-Handler und beendet erst danach den Logger. Passwörter, Header und URL-Parameter werden nicht geloggt.
 
 Im HTTP/1.0-Modus zeigen beide getesteten Browser „It works...!“ und beide Originalbilder korrekt an. Die Bilder wurden zusätzlich über `naturalWidth > 0` auf erfolgreiches Laden geprüft. [Chromium](screenshots/http10-chromium.png) und [Firefox](screenshots/http10-firefox.png) sind als echte Browser-Screenshots abgelegt. Die Testfälle prüfen zwei aufeinanderfolgende Requests über dieselbe TCP-Verbindung und mehrere parallele Verbindungen.
 
 ## Prüfung und Abgabe
 
-21 automatisierte Tests liefen mit Python 3.14.7 erfolgreich durch. Sie verwenden eigene Testdaten und unabhängige Protokollclients aus `poplib` und `http.client`. Enthalten sind falsche Anmeldung, Dot-Stuffing, Nachrichtengrößen, Maildrop-Lock, Lösch-Commit, Rollback, fragmentierte Antworten, EOF, Traversal, binäre Dateien, Fehlerstatus, Keep-Alive und Logging. Die Browsersteuerung lief getrennt mit Python 3.11.15. Mit der Originaldatenbank wurden vier Nachrichten mit 184, 185, 154 und 164 Bytes bestätigt; der erste Abruf stimmte bytegenau mit dem normalisierten Original überein.
+32 automatisierte Tests liefen mit Python 3.8.20 und 3.14.7 erfolgreich durch. Sie verwenden eigene Testdaten und unabhängige Protokollclients aus `poplib` und `http.client`. Geprüft sind unter anderem ungültige HTTP/0.9-Steuerzeichen, leere RETR-Antworten, TOP ohne Nachrichtenkörper, Headerfehler, `Connection: close` bei widersprüchlichem Keep-Alive, das Inaktivitätstimeout, Loggerausfälle vor und während des Serverstarts, das Warten auf laufende Handler beim Schließen, Parallelität, Dot-Stuffing, Maildrop-Lock auch nach Verbindungsabbruch, Lösch-Commit und Rollback. Mit der Originaldatenbank bestätigte ein separater Integrationstest vier Nachrichten mit 184, 185, 154 und 164 Octets; der erste Abruf stimmte bytegenau mit dem CRLF-normalisierten Original überein.
 
-Beide Moodle-Abgaben nennen am 19.10.2026 den 17.11.2026, 08:00 Uhr: [Horvath](https://moodle.aau.at/mod/assign/view.php?id=1489882) und [Alkhateeb](https://moodle.aau.at/mod/assign/view.php?id=1489881). Die Gruppennummer ist noch offen (`YY`). Für die offizielle Abgabe wäre der tatsächliche Gruppenname im Archivnamen einzusetzen. Es wurde nichts auf Moodle eingereicht.
+Beide Moodle-Abgaben nennen am 19.10.2026 den 17.11.2026, 08:00 Uhr: [Horvath](https://moodle.aau.at/mod/assign/view.php?id=1489882) und [Alkhateeb](https://moodle.aau.at/mod/assign/view.php?id=1489881). Raphael hat Gruppe 1 sowie die Teammitglieder Raphael Bleier, Devis und Fabio angegeben. Die Zuordnung zu einer der beiden Aktivitäten wurde nicht geprüft. Das lokale Archiv `ueb03-gruppe01.zip` enthält die aktuellen Artefakte und Gruppeninfo. Eingereicht wurde nichts.
 
 Die PDFs lassen sich mit pdfLaTeX bauen. Jeden Befehl zweimal ausführen:
 
@@ -88,8 +88,6 @@ pdflatex -halt-on-error -jobname=loesung_blatt03 '\def\explainmode{0}\input{blat
 pdflatex -halt-on-error -jobname=erklaerung_blatt03 '\def\explainmode{1}\input{blatt03.tex}'
 ```
 
-## Quellen und KI-Kennzeichnung
+## Quellen
 
-Grundlagen sind das Moodle-Blatt 03, die Datenbankschnittstelle, der mitgelieferte document root sowie `rn-chapter-2`, Folien 10–11 und 36–37. Die Originalunterlagen bleiben im Kurs. Normative Quellen: [RFC 1939](https://www.rfc-editor.org/rfc/rfc1939), Abschnitte 3–7; [RFC 2449](https://www.rfc-editor.org/rfc/rfc2449), Abschnitte 4–6; [RFC 1945](https://www.rfc-editor.org/rfc/rfc1945), Abschnitte 5–6; [RFC 8314](https://www.rfc-editor.org/rfc/rfc8314) für die TLS-Einordnung; [RFC 9051](https://www.rfc-editor.org/rfc/rfc9051) für IMAP.
-
-Laut Aufnahmefolien ist KI-Nutzung zu kennzeichnen. Verwendet wurden Hermes Agent v0.21.5 mit dem Modell `gpt-6.1-sol` am 19.10.2026 für Code, Texte und Tests. In den Python-Dateien stehen die jeweiligen Arbeitsaufträge. Testresultate und Screenshots stammen aus ausgeführten Programmen, nicht aus angenommenen Beispieldialogen.
+Grundlagen sind das Moodle-Blatt 03, die Datenbankschnittstelle, der mitgelieferte document root sowie `rn-chapter-2`, Folien 10–11, 36–37 und 59–60. Die Originalunterlagen bleiben im Kurs. Normative Quellen: [RFC 1939](https://www.rfc-editor.org/rfc/rfc1939), Abschnitte 3–7; [RFC 2449](https://www.rfc-editor.org/rfc/rfc2449), Abschnitte 4–6; [RFC 1945](https://www.rfc-editor.org/rfc/rfc1945), Abschnitte 5–6; [RFC 8314](https://www.rfc-editor.org/rfc/rfc8314) für die TLS-Einordnung; [RFC 9051](https://www.rfc-editor.org/rfc/rfc9051) für IMAP.

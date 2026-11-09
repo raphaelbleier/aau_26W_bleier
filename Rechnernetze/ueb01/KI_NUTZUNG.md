@@ -1,0 +1,18 @@
+# Kennzeichnung der KI-Nutzung
+
+Die Aufnahmefolien zur Lehrveranstaltung verlangen auf Seite 18 die Angabe von Tool, Version und Datum. Bei übernommenem Code ist auch die Anfrage anzugeben. Diese Kennzeichnung gilt für die Programme, Tests und Erklärung dieses Blattordners.
+
+Die bereits eingecheckte Ausgangsfassung nennt Hermes Agent mit OpenAI GPT-6 Luna (`gpt-6-luna`) und den 12.10.2026. Diese Angaben stammen aus den ursprünglichen Dateikommentaren; sie sind keine nachträglich verifizierten Ausführungsdaten. Die dort dokumentierten Anfragen waren Auszüge aus den Aufgaben:
+
+- `hello.py`, Ü 1.1: „Schreiben Sie ein Python-Programm hello.py, das Ihren Namen, die verwendete Python-Version und das aktuelle Arbeitsverzeichnis ausgibt.“
+- `text_bytes.py`, Ü 1.2: „Erstellen Sie ein Programm, das eine Zeichenkette einliest und diese zunächst als UTF-8 in Bytes kodiert. Geben Sie anschließend sowohl die Zeichenkette als auch die Bytefolge aus. Erweitern Sie das Programm, dass die Bytefolge wieder in eine Zeichenkette dekodiert wird.“
+- `convert.py`, Ü 1.3: „Schreiben Sie ein Python-Programm convert.py, welches den Namen einer Eingabedatei und den Namen einer Ausgabedatei als Kommandozeilenparameter erhält. Die Eingabedatei enthält einen UTF-8-kodierten Text. Lesen Sie die Datei ein und schreiben Sie den Inhalt in eine neue UTF-8-kodierte Datei. Zeilenumbrüche sollen dabei unabhängig vom auf dem Betriebssystem verwendeten Zeilenende korrekt verarbeitet werden.“
+- `protocol.py`, Ü 1.4: „Die Nachricht besteht aus einem Versionsfeld V mit 5 Bit (fixer Wert 2), 9 reservierten Bits (immer 0), zwei Flags D und U, einer 16 Bit großen Sequenznummer und einer 32 Bit großen Payload-Länge. Anschließend folgt die eigentliche Nutzlast variabler Länge. Implementieren Sie eine Funktion create_message(is_data, is_urgent, sequence_number, payload), die eine solche Nachricht als bytes-Objekt erzeugt. Schreiben Sie außerdem eine zweite Funktion parse_message(message).“
+- `threaded_calc.py`, Ü 1.5: „Implementieren Sie ein Programm, das eine Liste von Gleitkommazahlen aus einer Datei liest und eine rechenintensive Funktion auf den Werten ausführt. Die Berechnung soll auf n Threads aufgeteilt werden.“
+- `thread_safety.py`, Ü 1.6: „Erweitern Sie das Programm aus Ü 1.5 so, dass alle Threads ein gemeinsames Ergebnis erzeugen. Schützen Sie anschließend den Zugriff auf die gemeinsame Variable mit einem geeigneten Synchronisationsmechanismus aus der Python-Standardbibliothek.“
+- `producer_consumer.py`, Ü 1.7: „Verwenden Sie hierfür queue.Queue aus der Python-Standardbibliothek. Die Queue soll eine begrenzte Größe besitzen, sodass der Producer gegebenenfalls warten muss, wenn der Container voll ist.“
+- `tests/test_ueb01.py`, Ü 1.4: „Testen Sie Ihre Implementierung mit gültigen und ungültigen Eingaben.“
+
+Am 24.10.2026 wurde die vorhandene Arbeitsfassung mit Hermes Agent und OpenAI `gpt-6.1-sol` anhand der Angabe geprüft. Dabei wurden die Tests unter Python 3.8.20 und Python 3.11 ausgeführt, der Versuch zu gemeinsam genutzten Summen wiederholt und die Protokollgrafik kontrolliert. Die Kennzeichnung und Verweise wurden ergänzt. Der relevante Teil des Auftrags lautete: „Vollständig lösen: Kontext aus den VO/UE-Unterlagen des Kurses, Notation und Methoden der LV übernehmen, Ergebnis unabhängig prüfen (Mathe nachrechnen, Code bauen und Tests laufen lassen).“
+
+Zwischenänderungen der vorgefundenen Arbeitsfassung hatten keine vollständige KI-Kennzeichnung. Tool, Modell und Anfragen dieser Zwischenänderungen lassen sich daraus nicht sicher bestimmen. Die Angaben oben schließen diese Herkunftslücke nicht. Vor einer Abgabe muss diese Dokumentation ergänzt werden. Es wurde nichts auf Moodle eingereicht.

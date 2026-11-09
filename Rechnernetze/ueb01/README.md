@@ -1,6 +1,8 @@
 # Rechnernetze: Übungsblatt 01
 
-Erklärung als PDF: [erklaerung_blatt01.pdf](erklaerung_blatt01.pdf). LaTeX-Quelle: [erklaerung_blatt01.tex](erklaerung_blatt01.tex).
+Erklärung als PDF: [erklaerung_blatt01.pdf](erklaerung_blatt01.pdf) · [KI-Kennzeichnung und offene Herkunftslücke](KI_NUTZUNG.md) · LaTeX-Quelle: [erklaerung_blatt01.tex](erklaerung_blatt01.tex).
+
+Die Aufgaben 1.1 bis 1.7 sind umgesetzt. Am 24.10.2026 bestanden in der lokalen Arbeitsfassung alle 37 Tests unter Python 3.8.20 und Python 3.11. Diese Zwischenänderungen sind noch nicht veröffentlicht. Ihre KI-Kennzeichnung ist unvollständig; deshalb ist die Arbeitsfassung nicht abgabefertig.
 
 | Aufgabe | Datei | Inhalt |
 |---|---|---|
@@ -14,7 +16,7 @@ Erklärung als PDF: [erklaerung_blatt01.pdf](erklaerung_blatt01.pdf). LaTeX-Quel
 
 ## Ausführen
 
-Die Programme verwenden nur die Python-Standardbibliothek. Getestet wurde mit Python 3.8.20; die Einführungsfolien empfehlen Python 3.8.5 oder neuer.
+Die Programme verwenden nur die Python-Standardbibliothek. Das Aufgabenblatt verlangt Python 3. Getestet wurde mit Python 3.8.20.
 
 ```bash
 python3 -m venv .venv
@@ -40,7 +42,7 @@ uv run --python 3.8.20 python -m unittest discover -s tests -v
 
 ### 1.1 Python-Umgebung
 
-`hello.py` zeigt den Namen, den die laufende Python-Version über `platform.python_version()` meldet, und das Arbeitsverzeichnis von `os.getcwd()`. Der Name lässt sich mit `--name` ändern.
+`hello.py` gibt den Namen aus (standardmäßig Raphael Bleier, änderbar mit `--name`), dazu die Python-Version über `platform.python_version()` und das Arbeitsverzeichnis über `os.getcwd()`.
 
 ### 1.2 Text und Bytes
 
@@ -48,11 +50,13 @@ uv run --python 3.8.20 python -m unittest discover -s tests -v
 
 ### 1.3 Datei-I/O
 
-`convert.py` nimmt Ein- und Ausgabedatei als Argumente. `newline=None` vereinheitlicht die eingelesenen Zeilenenden; beim Schreiben setzt `newline="\n"` überall LF. Fehlende Parameter meldet `argparse`. Dateifehler, ungültiges UTF-8 und identische Ein-/Ausgabepfade werden mit einer Fehlermeldung und Exitcode 1 beendet. `with` schließt Dateien auch bei einem Fehler.
+`convert.py` nimmt Ein- und Ausgabedatei als Argumente. `newline=None` vereinheitlicht die eingelesenen Zeilenenden; beim Schreiben setzt `newline="\n"` überall LF. Fehlende Parameter meldet `argparse`. Dateifehler, ungültiges UTF-8 und dieselbe Eingabe-/Ausgabedatei werden mit einer Fehlermeldung und Exitcode 1 beendet; erkannt werden auch Symlink- und Hardlink-Aliase. `with` schließt Dateien auch bei einem Fehler.
 
 ### 1.4 Binärnachricht
 
-Der erste 32-Bit-Wert enthält Version (5 Bit, Wert 2), reservierte Bits (9 Bit), D- und U-Flag (je 1 Bit) sowie Sequenznummer (16 Bit). Danach folgen die 32-Bit-Payload-Länge und die Payload. `struct`-Format `!II` legt Big Endian fest. `parse_message` kontrolliert Version, reservierte Bits, positive Sequenznummer und exakte Payload-Länge. Der Test vergleicht auch einen konkreten Byte-String.
+Das erste 32-Bit-Wort enthält laut Grafik die Version in den Diagrammbits 0–4 (Wert 2), neun reservierte Bits, die Flags D/U und die 16-Bit-Sequenznummer. Die Grafik zählt von links; im Big-Endian-Wort liegt das Versionsfeld daher in den höchstwertigen fünf Bits. Danach folgen Payload-Länge und Payload. `struct`-Format `!II` schreibt beide Wörter in Network Byte Order. Für D=U=0, Sequenznummer 42 und Payload-Länge 11 ergibt sich `10 00 00 2a 00 00 00 0b`; ein Test prüft diese Feldbelegung direkt.
+
+Hinweis zur Angabe: Die Bildprüfung bestätigt, dass die Round-Trip-Abbildung auf Seite 3 `40 00 00 2a 00 00 00 0b …` zeigt. Im Feldkasten stehen keine konkreten Eingabewerte; aus den Bytes lassen sich aber `D=U=0`, Sequenznummer 42 und Payload-Länge 11 ablesen. Der Payload selbst ist nur als Auslassung dargestellt. Nach dem Bitfeldschema auf Seite 2 steht `0x40` im fünf Bit breiten Versionsfeld für 8, nicht für 2. Das Beispiel widerspricht damit der Vorgabe „Versionsnummer immer 2“. Die Implementierung folgt dem Feldschema und der festen Version 2; für die aus der Abbildung erkennbaren übrigen Werte ergibt sich `10 00 00 2a 00 00 00 0b`. Die Abweichung ist dokumentiert; eine Klärung durch die Lehrveranstaltung steht aus.
 
 ### 1.5 Threads
 
@@ -60,15 +64,15 @@ Die Elemente werden mit `divmod` in zusammenhängende, überschneidungsfreie Ber
 
 ### 1.6 Thread Safety
 
-`result += value` besteht gedanklich aus Lesen, Addieren und Schreiben. Wenn mehrere Threads dazwischenlaufen, kann ein Update den anderen überschreiben. `thread_safety.py` wiederholt den Vergleich standardmäßig dreimal und gibt auch die erwartete Summe aus einer sequentiellen Berechnung aus. Im ungeschützten Lauf sorgt eine Barriere dafür, dass alle Threads denselben alten Wert lesen und der verlorene Beitrag reproduzierbar sichtbar wird. Mit `Lock` läuft die Änderung innerhalb eines kritischen Abschnitts; der Lock wird danach sofort wieder freigegeben. Bei einem Workerfehler wird die Barriere abgebrochen und der Fehler weitergegeben; bei einem Startfehler werden bereits gestartete Threads zuerst eingesammelt.
+`result += value` besteht gedanklich aus Lesen, Addieren und Schreiben. Wenn mehrere Threads dazwischenlaufen, kann ein Update den anderen überschreiben. `thread_safety.py` führt zuerst die direkte ungeschützte Summe mit `+=` und die geschützte Variante mit `Lock` aus. Standardmäßig wiederholt das Programm den Vergleich dreimal und gibt die sequenzielle Sollsumme aus. Mit `zahlen.txt` ergaben die drei direkten Läufe unter Python 3.8.20 jeweils 15088760.258000, genau wie die Lock-Läufe und die sequenzielle Summe; in diesem Versuch war kein verlorener Beitrag zu beobachten. Das ist kein Beweis für Thread Safety: Ein verlorenes Update hängt von Laufzeit und Thread-Scheduling ab. Ein zusätzlicher Kontrolllauf mit Barriere lässt alle Threads denselben alten Wert lesen und macht den möglichen verlorenen Update reproduzierbar sichtbar. Dieser Kontrolllauf ersetzt den direkten Versuch nicht. Der Lock lässt immer nur einen Thread gleichzeitig auf die gemeinsame Summe zugreifen. Er umfasst nur diese kurze Änderung, damit andere Threads nicht unnötig warten und die Arbeit nicht stärker als nötig serialisiert wird. Bei einem Workerfehler wird die Barriere abgebrochen und der Fehler weitergegeben; bei einem Startfehler werden bereits gestartete Threads eingesammelt.
 
 ### 1.7 Producer-Consumer
 
 `queue.Queue(maxsize=...)` schützt Einfügen und Entnehmen zwischen Threads und blockiert den Producer bei voller Queue. `get()` wartet, wenn die Queue leer ist. Ein eindeutiges Sentinel-Objekt zeigt das Produktionsende an; `task_done()` und `join()` lassen den Hauptthread warten, bis alle Queue-Einträge abgearbeitet sind. Zeitlimits bei `put()` und `get()` lassen die Worker auf Fehler reagieren, statt unbegrenzt zu warten. Producer- und Consumer-Fehler werden an den aufrufenden Thread weitergegeben; teilweise fehlgeschlagene Threadstarts beenden und sammeln bereits gestartete Worker ein. Eine normale Liste bietet diese Synchronisation nicht.
 
-## KI-Nutzung
+## Gruppe und Abgabe
 
-Hermes Agent mit OpenAI GPT-6 Luna (`gpt-6-luna`), verwendet am 12.10.2026. Am Anfang jeder Python-Datei stehen Tool, Modell, Datum und der jeweilige Aufgabenblatt-Auszug, der als Anfrage diente. Laut Aufnahmefolien zur LV ist generative KI ausdrücklich erlaubt und muss gekennzeichnet werden. Die Gruppennummer ist noch nicht bekannt; deshalb ist kein gruppenspezifisches Abgabearchiv erstellt und es wurde nichts auf Moodle eingereicht.
+Vorbereitet für Gruppe 1 mit Raphael Bleier, Devis und Fabio, wie von Raphael angegeben. Die tatsächliche Zuordnung zu einer der Moodle-Abgabeaktivitäten wurde nicht geprüft. Das lokale Archiv `ueb01-gruppe01.zip` enthält Programme, Tests, `zahlen.txt`, Erklärung und Gruppeninfo. Die widersprüchliche Bytefolge ist dokumentiert; eingereicht wurde nichts.
 
 ## Prüfen
 

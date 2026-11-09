@@ -1,8 +1,10 @@
 # Rechnernetze: Übungsblatt 02
 
-[Lösung zum Abgeben](loesung_blatt02.pdf) · [Erklärung](erklaerung_blatt02.pdf) · [gemeinsame LaTeX-Quelle](blatt02.tex)
+[Lösung](loesung_blatt02.pdf) · [Erklärung](erklaerung_blatt02.pdf) · Kursvorgabe: KI-Nutzung ist zu kennzeichnen · [gemeinsame LaTeX-Quelle](blatt02.tex)
 
-Das Blatt behandelt Internetarchitektur, OSI und TCP/IP, Transportprotokolle, einen Bankautomatenentwurf, ein geplantes WLAN, Streaming sowie HTTP, Mail und DNS. Die Aufgaben 2.10 bis 2.12 werten die drei Moodle-Mitschnitte aus. Die Nummerierung bleibt wie in der Angabe: 2.1, 2.2 und 2.4 bis 2.12. Eine Aufgabe 2.3 steht dort nicht.
+Die eigene UDP-Aufzeichnung aus Aufgabe 2.10 liegt als [PCAP-Datei](capture-own-udp.pcap) bei. Moodle-Mitschnitte sind nicht im Repository enthalten.
+
+Das Blatt behandelt Internetarchitektur, OSI und TCP/IP, Transportprotokolle, einen Bankautomatenentwurf, ein geplantes WLAN, Streaming sowie HTTP, Mail und DNS. Die Aufgaben 2.10 bis 2.12 werten die drei Moodle-Mitschnitte aus; Aufgabe 2.10 enthält zusätzlich die eigene UDP-Aufzeichnung. Die Nummerierung bleibt wie in der Angabe: 2.1, 2.2 und 2.4 bis 2.12. Eine Aufgabe 2.3 steht dort nicht.
 
 Die Lösung enthält die geforderten Antworten und die beiden verlangten Grafiken, während das Erklär-PDF direkt an den passenden Stellen Hinweise zur Methode und zu typischen Verwechslungen ergänzt. Beide PDFs entstehen aus derselben Quelle; zusätzliche Erklärungen werden über `explainmode` zugeschaltet, damit die Zahlen und Ergebnisse beim Überarbeiten nicht zwischen zwei getrennten Dokumenten auseinanderlaufen.
 
@@ -46,8 +48,4 @@ Jeden Befehl zweimal ausführen, damit Verweise und Seitenumbrüche feststehen.
 
 Moodle nennt für Gruppe Horvath den 10.11.2026 um 08:00 Uhr. Für Gruppe Alkhateeb steht jetzt der 11.11.2026 um 11:00 Uhr (Stand: 27.10.2026). Der alte Alkhateeb-Termin aus 2025 ist damit ersetzt. Die Termine gelten jeweils nur für die zugehörige Übungsgruppe. Quellen sind die beiden [Horvath-](https://moodle.aau.at/mod/assign/view.php?id=1489875) und [Alkhateeb-Abgaben](https://moodle.aau.at/mod/assign/view.php?id=1489876).
 
-Die Gruppennummer fehlt weiterhin und steht deshalb als `YY` im Dokument. Für ein Abgabearchiv wäre laut Aufnahmefolien `ueb02-gruppeYY.zip` mit der tatsächlichen Nummer zu verwenden. Es wurde nichts auf Moodle eingereicht. Das Haus in 2.7 ist eine ausdrücklich fiktive Planung mit vorhandenem Internetanschluss und LAN-Verkabelung. Preise sind recherchierte Beispiele, keine Kaufzusage. Bankprotokoll und SMTP-Dialog sind Entwürfe, keine behaupteten Praxistransaktionen.
-
-## KI-Kennzeichnung
-
-Die Aufnahmefolien der LV verlangen bei KI-Nutzung Tool, Version und Datum; deshalb steht in der README und in beiden PDFs, dass Hermes Agent v0.21.5 mit dem OpenAI-Modell `gpt-6.1-sol` am 19.10.2026 für Ausarbeitung und Prüfung verwendet wurde. Separat übernommener Programmcode wird hier nicht abgegeben. Quellen, Messungen und Beispiele sind im Dokument voneinander getrennt.
+Raphael hat Gruppe 1 sowie die Teammitglieder Raphael Bleier, Devis und Fabio angegeben. Die tatsächliche Zuordnung zu einer der beiden Moodle-Abgabeaktivitäten wurde nicht geprüft. Das lokale Archiv `ueb02-gruppe01.zip` enthält die aktuellen Artefakte und Gruppeninfo. Eingereicht wurde nichts. Aufgabe 2.7 verwendet Raphaels Keller-Netz. Die genauen Modelle von Switch und Access-Point sind unbekannt; ob ein AP bereits vorhanden ist, wurde nicht bestätigt. Auch das Modell des vorhandenen Provider-5G-Routers ist nicht bekannt. Dafür sind keine zusätzlichen Hardwarekosten angesetzt; laufende Vertragsgebühren bleiben außen vor. Die genannten Preise sind Modellbeispiele und kein bestätigter Anschaffungspreis. Bankprotokoll und SMTP-Dialog sind Entwürfe, keine behaupteten Praxistransaktionen.
