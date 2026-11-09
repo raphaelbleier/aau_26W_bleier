@@ -1,0 +1,296 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor,tikz}
+\usepackage[most]{tcolorbox}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\allowdisplaybreaks
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newcommand{\aufgabe}[1]{\section*{#1}}
+\newcommand{\angabe}[1]{\textit{#1}\par\smallskip}
+\newcommand{\teil}[1]{\subsection*{#1}}
+\newcommand{\why}[1]{\text{\small\color{black!65}#1}}
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,title={Erklärung}}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\begin{document}
+\begin{center}
+{\Large Exercise sheet 6}\\
+Linear Optimization (311.160), WS 2026/27\\
+Raphael Bleier \qquad 16 November 2026
+\end{center}
+\explain{Dieses Blatt dreht sich um die Frage, wie ein Simplex-Schritt das Dictionary erneuert. Bland's Rule ist eine feste Indexregel gegen Zylen: bei gleichberechtigten Kandidaten nimmt man den kleinsten Variablenindex. In 6.2 bauen wir eine zulässige Startbasis mit künstlichen Variablen, und 6.3 verpackt alles in eine Schleife, die Example 2.2 aus der Vorlesung löst.}
+
+\aufgabe{Exercise 6.1 (On the simplex method)}
+\angabe{Let $B$ be a basis and $x_B=A_B^{-1}b-A_B^{-1}A_Nx_N=\bar b-\bar Ax_N$ the corresponding system of equations in the simplex dictionary obtained by splitting $Ax=b$, where $\bar A$ has entries $\bar a_{iq}$. Suppose that we choose $x_{q_0}$ as entering variable and that the minimum ratio test gives us $x_{i_0}$ as leaving variable (note that this means $\bar a_{i_0q_0}>0$). We denote by $\tilde B$ the set of indices given by changing $q_0$ and $i_0$ in $B$ and solve the system $x_B=\bar b-\bar Ax_N$ for $x_{\tilde B}$ to get a new dictionary. Show that $\tilde B$ is a basis.}
+\explain{Eine Basis ist eine Indexmenge, deren Spalten in $A$ eine invertierbare Teilmatrix bilden. Zu zeigen ist also: $A_{\tilde B}$ ist invertierbar. Der Weg läuft über den Hinweis des Blatts in drei Schritten: erst zeigen, dass das neue Dictionary mit $Ax=b$ äquivalent ist, dann dass zu jedem $x_{\tilde N}$ genau ein $x_{\tilde B}$ passt, und daraus die Invertierbarkeit folgern.}
+\teil{Setup}
+The entering and leaving indices swap places:
+\begin{align*}
+\tilde B&=(B\setminus\{i_0\})\cup\{q_0\}&&\why{definition of $\tilde B$}\\
+\tilde N&=(N\setminus\{q_0\})\cup\{i_0\}&&\why{the remaining variables}
+\end{align*}
+To say that $\tilde B$ is a basis means that $A_{\tilde B}$ is invertible.
+\explain{Vorab die Rollenverteilung: $q_0$ ist der Index der eintretenden Variablen aus der Nichtbasis, $i_0$ der der austretenden aus der Basis. Die Voraussetzung $\bar a_{i_0q_0}>0$ garantiert, dass wir die Zeile $i_0$ nach $x_{q_0}$ auflösen dürfen, denn wir teilen durch $\bar a_{i_0q_0}\neq 0$. Dass der Eintrag positiv und nicht nur von null verschieden ist, brauchen wir für die Zulässigkeit der neuen Ecke, nicht für den Beweis selbst.}
+\teil{The new dictionary is equivalent to $Ax=b$}
+The old dictionary satisfies
+\begin{align*}
+x_B&=A_B^{-1}b-A_B^{-1}A_Nx_N&&\why{given form of the dictionary}\\
+A_Bx_B&=b-A_Nx_N&&\why{multiply by $A_B$}\\
+A_Bx_B+A_Nx_N&=b&&\why{move $A_Nx_N$ to the left}
+\end{align*}
+The last line is $Ax=b$, because $B$ and $N$ partition the column indices of $A$. So the old dictionary and $Ax=b$ have the same solution set.
+The pivot constructs the new dictionary with two operations on this system. First, the equation of row $i_0$,
+\begin{align*}
+x_{i_0}&=\bar b_{i_0}-\sum_{q\in N}\bar a_{i_0q}\,x_q&&\why{row $i_0$ of the old dictionary},
+\end{align*}
+is solved for $x_{q_0}$:
+\begin{align*}
+x_{q_0}&=\frac{\bar b_{i_0}}{\bar a_{i_0q_0}}-\frac{1}{\bar a_{i_0q_0}}\,x_{i_0}-\sum_{q\in N,\,q\neq q_0}\frac{\bar a_{i_0q}}{\bar a_{i_0q_0}}\,x_q&&\why{divide by $\bar a_{i_0q_0}>0$, isolate $x_{q_0}$}
+\end{align*}
+This is possible because $\bar a_{i_0q_0}>0$, in particular $\bar a_{i_0q_0}\neq 0$. Second, this expression for $x_{q_0}$ is substituted into the remaining rows and into the objective row. Solving one equation for one variable and substituting the result into the other equations are rearrangements that change the form of the system but not its solution set. Therefore the new dictionary $x_{\tilde B}=\tilde b-\tilde Ax_{\tilde N}$ has the same solution set as the old one, and hence the same solution set as $Ax=b$.
+\explain{Warum ist das der springende Punkt? Ein Dictionary ist nur eine umgeformte Version von $Ax=b$: Man multipliziert mit $A_B^{-1}$ und sortiert um. Jeder Pivot ist eine weitere Umformung desselben Gleichungssystems. Umformen ändert die Lösungsmenge nicht. Deshalb beschreiben altes und neues Dictionary exakt dieselben Vektoren $x$.}
+\teil{Every pair from the new dictionary satisfies $Ax=b$}
+Take any pair $x_{\tilde B},x_{\tilde N}$ obtained from the system of equations in the new dictionary, that is, $x_{\tilde B}=\tilde b-\tilde Ax_{\tilde N}$. This pair solves the new dictionary's system, and the new dictionary has the same solution set as $Ax=b$. Hence
+\begin{align*}
+A_{\tilde B}x_{\tilde B}+A_{\tilde N}x_{\tilde N}&=b&&\why{the pair solves $Ax=b$}
+\end{align*}
+because $\tilde B$ and $\tilde N$ also partition the column indices of $A$.
+\explain{Das ist die erste der drei angekündigten Eigenschaften aus dem Hinweis. Sie liefert Zulässigkeit: Für jedes $x_{\tilde N}$ ist der Wert $x_{\tilde B}=\tilde b-\tilde Ax_{\tilde N}$ aus dem Dictionary mindestens eine Lösung des Gleichungssystems $A_{\tilde B}x_{\tilde B}=b-A_{\tilde N}x_{\tilde N}$. Es fehlt noch die Eindeutigkeit.}
+\teil{For each $x_{\tilde N}$ the completion $x_{\tilde B}$ is unique}
+Fix a value of $x_{\tilde N}$ and suppose both $x_{\tilde B}$ and $x'_{\tilde B}$ satisfy
+\begin{align*}
+A_{\tilde B}x_{\tilde B}&=b-A_{\tilde N}x_{\tilde N}&&\why{assumption for $x_{\tilde B}$}\\
+A_{\tilde B}x'_{\tilde B}&=b-A_{\tilde N}x_{\tilde N}&&\why{assumption for $x'_{\tilde B}$}
+\end{align*}
+Then both pairs $(x_{\tilde B},x_{\tilde N})$ and $(x'_{\tilde B},x_{\tilde N})$ solve $Ax=b$, so both solve the new dictionary's system. But in the new dictionary the basic part is determined by the nonbasic part alone:
+\begin{align*}
+x_{\tilde B}&=\tilde b-\tilde Ax_{\tilde N}&&\why{form of the new dictionary}
+\end{align*}
+and the right-hand side is the same number for both pairs. Hence $x_{\tilde B}=x'_{\tilde B}$. So for each $x_{\tilde N}$ there is exactly one solution $x_{\tilde B}$ of $A_{\tilde B}x_{\tilde B}=b-A_{\tilde N}x_{\tilde N}$.
+\explain{Das Argument benutzt beide Richtungen der Äquivalenz: Jedes Paar aus dem Dictionary löst $Ax=b$, und umgekehrt löst jedes Paar, das $Ax=b$ löst, das Dictionary. Deshalb kann es zu festem $x_{\tilde N}$ nur ein passendes $x_{\tilde B}$ geben. Genau das ist die zweite Eigenschaft aus dem Hinweis.}
+\teil{$A_{\tilde B}$ is invertible}
+We use the equivalence from the hint: $A_{\tilde B}$ is invertible if and only if for each $x_{\tilde N}$ there is a unique solution $x_{\tilde B}$ of $A_{\tilde B}x_{\tilde B}=b-A_{\tilde N}x_{\tilde N}$.
+First direction. Assume $A_{\tilde B}$ is invertible. For each $x_{\tilde N}$, the vector
+\begin{align*}
+x_{\tilde B}&=A_{\tilde B}^{-1}\bigl(b-A_{\tilde N}x_{\tilde N}\bigr)&&\why{apply $A_{\tilde B}^{-1}$}
+\end{align*}
+solves the system. If $x'_{\tilde B}$ also solves it, then
+\begin{align*}
+A_{\tilde B}x'_{\tilde B}&=b-A_{\tilde N}x_{\tilde N}&&\why{assumption}\\
+A_{\tilde B}^{-1}A_{\tilde B}x'_{\tilde B}&=A_{\tilde B}^{-1}\bigl(b-A_{\tilde N}x_{\tilde N}\bigr)&&\why{multiply by $A_{\tilde B}^{-1}$ from the left}\\
+x'_{\tilde B}&=A_{\tilde B}^{-1}\bigl(b-A_{\tilde N}x_{\tilde N}\bigr)&&\why{$A_{\tilde B}^{-1}A_{\tilde B}=I$}
+\end{align*}
+so the solution is unique.
+Second direction. Assume that for each $x_{\tilde N}$ the system has a unique solution; existence is guaranteed by the first property, for example $x_{\tilde B}=\tilde b-\tilde Ax_{\tilde N}$ for the pair with the same $x_{\tilde N}$. Suppose $A_{\tilde B}$ were not invertible. Then there is a vector $y\neq 0$ with
+\begin{align*}
+A_{\tilde B}y&=0&&\why{nonzero null space of a singular matrix}
+\end{align*}
+Take $x_{\tilde N}=0$ and let $x_{\tilde B}$ be its unique solution. Then
+\begin{align*}
+A_{\tilde B}(x_{\tilde B}+y)&=A_{\tilde B}x_{\tilde B}+A_{\tilde B}y&&\why{distribute $A_{\tilde B}$}\\
+&=b-A_{\tilde N}\cdot 0+0&&\why{solution property and $A_{\tilde B}y=0$}\\
+&=b-A_{\tilde N}\cdot 0&&\why{collect}
+\end{align*}
+so $x_{\tilde B}+y$ is a second, different solution for the same $x_{\tilde N}=0$. This contradicts uniqueness. Hence $A_{\tilde B}$ is invertible, and $\tilde B$ is a basis.
+\[ \boxed{\tilde B \text{ is a basis.}\ \square} \]
+\explain{Der Widerspruch kommt aus einem einzigen Nullvektor: Eine singuläre quadratische Matrix hat einen nonzero-Kernvektor, und der kann zu jeder Lösung dazugezählt werden, ohne die rechte Seite zu ändern. Da es aber nur eine Lösung gibt, kann der Kern nicht nonzero sein. Eine quadratische Matrix mit Kern $\{0\}$ ist invertierbar, also ist $\tilde B$ eine Basis.}
+\explain{Die dritte Eigenschaft aus dem Hinweis steckt jetzt ebenfalls drin: Statt das alte Dictionary nach $x_{\tilde B}$ umzuformen, hätte man $Ax=b$ auch direkt nach $x_{\tilde B}$ auflösen und $x_{\tilde B}=A_{\tilde B}^{-1}b-A_{\tilde B}^{-1}A_{\tilde N}x_{\tilde N}$ notieren. Beide Wege beschreiben dieselbe Lösungsmenge, und weil zu jedem $x_{\tilde N}$ genau ein $x_{\tilde B}$ gehört, liefern beide dieselben Gleichungen. Das ist der Grund, warum in Exercise 6.3 der Pivot einfach durch einen neuen Aufruf von \texttt{create\_simplex\_dictionary} ersetzt werden darf.}
+\explain{Zur Rolle von $\bar a_{i_0q_0}>0$: Für die Aussage $\tilde B$ ist eine Basis wäre $\neq 0$ genug, denn nur der Betrag steht im Nenner. Die Positivität aus dem Quotiententest sorgt zusätzlich dafür, dass die neue Basislösung wieder zulässig ist, weil $x_{i_0}$ dabei auf null fällt und keine Grundvariable unter null gedrückt wird. Diese Zulässigkeit ist aber nicht Teil der Behauptung.}
+
+\aufgabe{Exercise 6.2 (Two-phase simplex)}
+\angabe{Consider the problem: maximize $-x_1-x_2$ subject to $2x_1+x_2\geq 3$, $x_1+2x_2\geq 3$, $x\geq 0$. Set up the auxiliary problem and solve it. Is the original LP feasible? If so, what is the starting solution for the simplex algorithm?}
+\explain{Beide Nebenbedingungen sind $>$-Ungleichungen mit positiver rechter Seite. Der Ursprung verletzt sie, also gibt es keine zulässige Schlupfbasis zum Starten. Die Idee der zwei Phasen: künstliche Variablen $x_5,x_6$ machen die Gleichungen sofort lösbar, und Phase 1 drückt sie anschließend auf null. Gelingt das, bleibt eine zulässige Basis des Originalproblems übrig.}
+\teil{Standard form and auxiliary problem}
+Introduce surplus variables $x_3,x_4\geq 0$:
+\begin{align*}
+2x_1+x_2-x_3&=3&&\why{first constraint, surplus $x_3$}\\
+x_1+2x_2-x_4&=3&&\why{second constraint, surplus $x_4$}
+\end{align*}
+Splitting $Ax=b$ with the slack basis $B=\{3,4\}$ gives
+\begin{align*}
+x_3&=-3+2x_1+x_2&&\why{solve the first equation for $x_3$}\\
+x_4&=-3+x_1+2x_2&&\why{solve the second equation for $x_4$}
+\end{align*}
+At $x_1=x_2=0$:
+\begin{align*}
+x_3&=-3&&\why{set $x_N=0$}\\
+-3&<0&&\why{the value of $x_3$}\\
+-3&<0&&\why{the value of $x_4$}
+\end{align*}
+The basic solution is infeasible, so the simplex method cannot start here.
+\explain{Die Schlupfvariable geht bei einer $>$-Ungleichung mit minus rein: $2x_1+x_2-x_3=3$ heißt, $x_3$ misst den Überschuss über die Schranke. Am Nullpunkt fehlt es noch an Erfüllung, deshalb ist $x_3$ negativ. Genau dieses Problem lösen die künstlichen Variablen.}
+Add artificial variables $x_5,x_6\geq 0$ and solve the auxiliary problem
+\begin{align*}
+\min\; w&=x_5+x_6&&\why{drive both artificials to zero}\\
+\text{subject to}\quad 2x_1+x_2-x_3+x_5&=3&&\why{artificial $x_5$ in the first row}\\
+x_1+2x_2-x_4+x_6&=3&&\why{artificial $x_6$ in the second row}\\
+x&\geq 0&&\why{all variables nonnegative}
+\end{align*}
+With the artificial basis $B=\{5,6\}$ the dictionary is
+\begin{align*}
+x_5&=3-2x_1-x_2+x_3&&\why{solve row 1 for $x_5$}\\
+x_6&=3-x_1-2x_2+x_4&&\why{solve row 2 for $x_6$}
+\end{align*}
+At $x_N=0$ both artificials equal $3\geq 0$, so this basis is feasible. In terms of the nonbasic variables,
+\begin{align*}
+z&=-w&&\why{maximize $-w$ instead of minimizing $w$}\\
+&=-x_5-x_6&&\why{definition of $w$}\\
+&=-(3-2x_1-x_2+x_3)-(3-x_1-2x_2+x_4)&&\why{substitute both rows}\\
+&=-6+2x_1+x_2-x_3+3x_1+2x_2-x_4&&\why{distribute the minus signs}\\
+&=-6+3x_1+3x_2-x_3-x_4&&\why{collect terms}
+\end{align*}
+\explain{Nach Einsetzen der künstlichen Variablen als Basis ist das Startdictionary zulässig: $x_5=x_6=3$ erfüllt beide Gleichungen. Die Zielfunktion $w$ zählt, wie viel Künstliches noch drinsteckt. Solange $w>0$, ist die aktuelle Lösung keine zulässige Lösung des Originalproblems.}
+\teil{Phase 1, first pivot}
+The reduced costs of $(x_1,x_2,x_3,x_4)$ are $(3,3,-1,-4)$. The largest positive value $3$ occurs twice; the tie goes to the earlier position in $N=(1,2,3,4)$, so $x_1$ enters.
+\begin{align*}
+3&=3&&\why{tie between $x_1$ and $x_2$}\\
+1&<2&&\why{the earlier index wins}
+\end{align*}
+The column of $x_1$ in the dictionary is $(2,1)^T$. Both entries are positive, so both rows limit the step:
+\begin{align*}
+\frac{3}{2}&=\tfrac32&&\why{ratio in the $x_5$ row}\\
+\frac{3}{1}&=3&&\why{ratio in the $x_6$ row}\\
+\tfrac32&<3&&\why{compare the ratios}
+\end{align*}
+$x_5$ leaves with step length $\tfrac32$. Solve its row for $x_1$:
+\begin{align*}
+x_5&=3-2x_1-x_2+x_3&&\why{old row}\\
+2x_1&=3-x_5-x_2+x_3&&\why{move $2x_1$ left, $x_5$ right}\\
+x_1&=\tfrac32-\tfrac12x_2+\tfrac12x_3-\tfrac12x_5&&\why{divide by $2$}
+\end{align*}
+Substitute into the remaining rows:
+\begin{align*}
+x_6&=3-x_1-2x_2+x_4&&\why{old row}\\
+&=3-\bigl(\tfrac32-\tfrac12x_2+\tfrac12x_3-\tfrac12x_5\bigr)-2x_2+x_4&&\why{substitute $x_1$}\\
+&=3-\tfrac32+\tfrac12x_2-\tfrac12x_3+\tfrac12x_5-2x_2+x_4&&\why{distribute the minus}\\
+&=\tfrac32-\tfrac32x_2-\tfrac12x_3+\tfrac12x_5+x_4&&\why{collect terms}\\
+z&=-6+3x_1+3x_2-x_3-x_4&&\why{old objective}\\
+&=-6+3\bigl(\tfrac32-\tfrac12x_2+\tfrac12x_3-\tfrac12x_5\bigr)+3x_2-x_3-x_4&&\why{substitute $x_1$}\\
+&=-6+\tfrac92-\tfrac32x_2+\tfrac32x_3-\tfrac32x_5+3x_2-x_3-x_4&&\why{distribute the $3$}\\
+&=-\tfrac32+\tfrac32x_2+\tfrac12x_3-\tfrac32x_5-x_4&&\why{collect terms}
+\end{align*}
+The new basic solution is $(x_1,x_2,x_3,x_4,x_5,x_6)=(\tfrac32,0,0,0,0,\tfrac32)$ with $z=-\tfrac32$.
+\explain{Erster Schritt der Phase 1: $x_1$ steigt auf $\tfrac32$, bis die erste künstliche Variable auf null fällt. $w$ sinkt von $6$ auf $3$. $x_6$ ist immer noch $3$, also ist noch nicht fertig.}
+\teil{Phase 1, second pivot}
+The reduced costs of $(x_2,x_3,x_4,x_5)$ in the new objective are $(\tfrac32,\tfrac12,-\tfrac32,-1)$. Only positive ones qualify:
+\begin{align*}
+\tfrac12&>0&&\why{$x_3$ qualifies}\\
+\tfrac32&>\tfrac12&&\why{$x_2$ has the larger value}
+\end{align*}
+$x_2$ enters. Its column is $(\tfrac12,\tfrac32)^T$:
+\begin{align*}
+\frac{3/2}{1/2}&=3&&\why{ratio in the $x_1$ row}\\
+\frac{3/2}{3/2}&=1&&\why{ratio in the $x_6$ row}\\
+1&<3&&\why{compare the ratios}
+\end{align*}
+$x_6$ leaves with step length $1$. Solve its row for $x_2$:
+\begin{align*}
+x_6&=\tfrac32-\tfrac32x_2-\tfrac12x_3+\tfrac12x_5+x_4&&\why{old row}\\
+\tfrac32x_2&=\tfrac32-x_6-\tfrac12x_3+\tfrac12x_5+x_4&&\why{move $\tfrac32x_2$ left, $x_6$ right}\\
+x_2&=1-\tfrac13x_3+\tfrac23x_4+\tfrac13x_5-\tfrac13x_6&&\why{divide by $\tfrac32$}
+\end{align*}
+Substitute into the remaining rows:
+\begin{align*}
+x_1&=\tfrac32-\tfrac12x_2+\tfrac12x_3-\tfrac12x_5&&\why{old row}\\
+&=\tfrac32-\tfrac12\bigl(1-\tfrac13x_3+\tfrac23x_4+\tfrac13x_5-\tfrac13x_6\bigr)+\tfrac12x_3-\tfrac12x_5&&\why{substitute $x_2$}\\
+&=\tfrac32-\tfrac12+\tfrac16x_3-\tfrac13x_4-\tfrac16x_5+\tfrac16x_6+\tfrac12x_3-\tfrac12x_5&&\why{distribute $-\tfrac12$}\\
+&=1+\tfrac23x_3-\tfrac13x_4-\tfrac23x_5+\tfrac13x_6&&\why{collect terms}\\
+z&=-\tfrac32+\tfrac32x_2+\tfrac12x_3-\tfrac32x_5-x_4&&\why{old objective}\\
+&=-\tfrac32+\tfrac32\bigl(1-\tfrac13x_3+\tfrac23x_4+\tfrac13x_5-\tfrac13x_6\bigr)+\tfrac12x_3-\tfrac32x_5-x_4&&\why{substitute $x_2$}\\
+&=-\tfrac32+\tfrac32-\tfrac12x_3+x_4+\tfrac12x_5-\tfrac12x_6+\tfrac12x_3-\tfrac32x_5-x_4&&\why{distribute $\tfrac32$}\\
+&=-x_5-x_6&&\why{collect terms}
+\end{align*}
+\explain{Zweiter Schritt: $x_2$ steigt auf $1$, $x_6$ fällt auf null. Jetzt sind beide künstlichen Variablen Nichtbasisvariablen. In der Zielfunktion sind sie die einzigen Variablen mit negativen Koeffizienten, alle anderen Koeffizienten sind genau null.}
+\teil{Optimality of phase 1 and the starting solution}
+The final dictionary has $B=\{1,2\}$, $N=\{3,4,5,6\}$ and reduced costs $(0,0,-1,-1)$:
+\begin{align*}
+0&\leq 0&&\why{reduced cost of $x_3$}\\
+0&\leq 0&&\why{reduced cost of $x_4$}\\
+-1&\leq 0&&\why{reduced cost of $x_5$}\\
+-1&\leq 0&&\why{reduced cost of $x_6$}
+\end{align*}
+So $z=-w$ is maximal. At $x_N=0$:
+\begin{align*}
+z&=-x_5-x_6&&\why{final objective row}\\
+&=0-0&&\why{set $x_N=0$}\\
+&=0&&\why{compute the difference}
+\end{align*}
+The maximum of $-w$ is $0$, hence $\min w=0$ with $x_5=x_6=0$. The original LP is feasible.
+\[ \boxed{\text{the original LP is feasible}} \]
+Dropping the artificials $x_5,x_6$ from the dictionary leaves the starting dictionary for the simplex algorithm on the original problem:
+\begin{align*}
+x_1&=1+\tfrac23x_3-\tfrac13x_4&&\why{set $x_5=x_6=0$ in the $x_1$ row}\\
+x_2&=1-\tfrac13x_3+\tfrac23x_4&&\why{set $x_5=x_6=0$ in the $x_2$ row}\\
+z&=-x_1-x_2&&\why{original objective}\\
+&=-2-\tfrac13x_3-\tfrac13x_4&&\why{substitute both rows}
+\end{align*}
+The starting basic feasible solution is $x=(1,1,0,0)^T$ with basis $B=\{1,2\}$.
+\[ \boxed{x=(1,1,0,0)^T,\quad B=\{1,2\}} \]
+\explain{Phase 1 endet mit $w=0$: beide künstlichen Variablen sind bei null und nicht mehr in der Basis. Genau das war das Ziel. Die verbleibende Basis $\{1,2\}$ mit $x_1=x_2=1$ ist eine Ecke des Originalproblems und damit die Startlösung, nach der die Aufgabe fragt.}
+\explain{Zwei Kontrollen dazu. Erstens: $2\cdot 1+1=3$ und $1+2\cdot 1=3$, beide $>$-Schranken sind aktiv, die Lösung liegt auf der Ecke, wo sich die beiden Geraden schneiden. Zweitens: die reduzierten Kosten $-\tfrac13$ und $-\tfrac13$ sind beide negativ, also wäre die Simplex-Schleife hier sofort am Optimum. Example 2.2 in 6.3 hat dieses Vergnügen nicht und braucht echte Pivot-Schritte.}
+\explain{Typische Fehler in dieser Aufgabe: die Schlupfvariable bei $>$-Ungleichungen mit plus statt minus einführen (dann hat die Startbasis gar keine negative Komponente und man sieht das Problem nicht), die künstlichen Variablen in der Zielfunktion falsch vorzeichen, oder nach Phase 1 vergessen, die künstlichen Variablen aus dem Dictionary zu entfernen. Sie dürfen danach nicht mehr ansteigen, sonst verlässt man die zulässige Menge des Originalproblems.}
+
+\aufgabe{Exercise 6.3 (Programming)}
+\angabe{We continue with Exercise 5.3 and Example 2.2 of the lecture notes. Rename \texttt{initial\_simplex\_dictionary} to \texttt{create\_simplex\_dictionary}. Use \texttt{create\_simplex\_dictionary}, \texttt{choose\_entering\_variable\_index} and \texttt{choose\_leaving\_variable\_index} to write an algorithm that solves the problem of Example 2.2 numerically. Terminate when all reduced costs in a dictionary are nonpositive. Test your algorithm with the data of Example 2.2. Submit \texttt{LASTNAME\_sheet\_NUMBER.py} and \texttt{LASTNAME\_sheet\_NUMBER.pdf}.}
+\teil{Why one dictionary function is enough}
+Exercise 6.1 shows that the new dictionary can be obtained in two equivalent ways: by solving the equations of the old dictionary for the new basis $\tilde B$, or by splitting $Ax=b$ directly as $x_{\tilde B}=A_{\tilde B}^{-1}b-A_{\tilde B}^{-1}A_{\tilde N}x_{\tilde N}$. The second way is exactly what \texttt{initial\_simplex\_dictionary} from sheet 4 computes. So the pivot needs no new function, only a new basis:
+\begin{align*}
+\tilde B&=(B\setminus\{i_0\})\cup\{q_0\}&&\why{replace leaving index $i_0$ by entering index $q_0$}
+\end{align*}
+and a fresh call to the renamed function.
+\explain{Das ist der Kern des Blatts: Ein Pivot ist nichts anderes als eine andere Zerlegung von $Ax=b$. Die Funktion rechnet jedes Mal von der Matrix aus neu, statt Zeilen im alten Dictionary umzuformen. Das ist teurer als In-Place-Umformen, aber einfacher zu testen, und die Zahlen sind dieselben.}
+\teil{The algorithm}
+The function \texttt{solve\_simplex} in \texttt{Bleier\_sheet\_6.py} follows the pseudocode of the lecture notes:
+\begin{enumerate}
+\item Create the dictionary for the starting basis $B$ and reject a basis with $\overline b<0$ components, since the loop has no phase 1.
+\item Ask \texttt{choose\_entering\_variable\_index}. If it returns \texttt{None}, all reduced costs are nonpositive and the current basic solution is optimal.
+\item Otherwise ask \texttt{choose\_leaving\_variable\_index}. If it returns \texttt{None}, the entering column has no positive entry and the LP is unbounded.
+\item Replace the leaving index by the entering index at its position in $B$ and go back to step 1.
+\end{enumerate}
+A counter bounds the number of iterations, so a cycling basis cannot loop forever.
+\explain{Die Schleife macht pro Runde genau das, was auf Blatt 5 von Hand gerechnet wurde: Dictionary aufstellen, eintretende Variable suchen, austretende suchen, Basis tauschen. Der Abbruch steht im Auftrage: alle reduzierten Kosten nichtpositiv. Der Iterationszähler ist eine Sicherheitsnetz gegen Zyklen, die Bland's Rule aus 6.1 theoretisch ausschließt, hier aber nicht aktiviert ist.}
+\teil{Test on Example 2.2}
+Example 2.2 is $\max -x_1+2x_2+6x_3$ with
+\begin{align*}
+2x_1+3x_2+x_4&=10&&\why{first constraint}\\
+x_1+2x_3+x_5&=8&&\why{second constraint}\\
+x_1+2x_2+x_3+x_6&=6&&\why{third constraint}
+\end{align*}
+The run starts from the slack basis $B=(4,5,6)$:
+\begin{align*}
+\overline c_N&=(-1,2,6)^T&&\why{initial reduced costs}\\
+N&=(1,2,3)&&\why{nonbasis of the first dictionary}\\
+x_3\text{ enters, }x_5\text{ leaves}&&\why{ratio test: $\tfrac{8}{2}=4<\tfrac{6}{1}=6$}
+\end{align*}
+The second dictionary has $B=(4,3,6)$, $\overline b=(10,4,2)^T$, $z=24$ and
+\begin{align*}
+\overline c_N&=(-4,2,-3)^T&&\why{second reduced costs}\\
+N&=(1,2,5)&&\why{nonbasis of the second dictionary}\\
+x_2\text{ enters, }x_6\text{ leaves}&&\why{ratio test: $\tfrac{2}{2}=1<\tfrac{10}{3}$}
+\end{align*}
+The third dictionary has $B=(4,3,2)$, $\overline b=(7,4,1)^T$, $z=26$ and
+\begin{align*}
+\overline c_N&=(-\tfrac92,-\tfrac52,-1)^T&&\why{third reduced costs}\\
+-\tfrac92&\leq 0&&\why{reduced cost of $x_1$}\\
+-\tfrac52&\leq 0&&\why{reduced cost of $x_5$}\\
+-1&\leq 0&&\why{reduced cost of $x_6$}\\
+N&=(1,5,6)&&\why{nonbasis of the third dictionary}
+\end{align*}
+The loop stops after two pivots. The solution is
+\begin{align*}
+x&=(0,1,4,7,0,0)^T&&\why{basic values from $\overline b$}\\
+z&=26&&\why{objective value at this basis}
+\end{align*}
+\explain{Der Testlauf bestätigt die Rechnung von Blatt 5 und Lecture 4: derselbe erste Pivot, dann ein zweiter bis zum Optimum. Zwischendrin steht das Programm einmal bei $z=24$ auf der Ecke $(0,0,4)$. Die reduzierten Kosten $-\tfrac92,-\tfrac52,-1$ sind alle negativ, also ist $z=26$ das Maximum.}
+\[ \boxed{x=(0,1,4,7,0,0)^T,\quad z=26} \]
+\explain{In \texttt{Bleier\_sheet\_6.py} steckt \texttt{create\_simplex\_dictionary} (umbenannt, Körper unverändert), die beiden Wahlfunktionen von Blatt 5 und die neue \texttt{solve\_simplex}-Schleife. \texttt{test\_sheet6.py} prüft die Startwerte vom Blatt 5, beide Pivot-Entscheidungen, das Endergebnis $z=26$, den sofortigen Abbruch an einer optimalen Basis, die Unbeschränktheits-Erkennung und die Zurückweisung einer unzulässigen Startbasis.}
+\explain{Classroom task 6.1, nur als Lernzusatz, nicht Teil der Abgabe. Die reduzierten Kosten von $(x_2,x_3,x_6,x_8,x_9)$ sind $(-2,1,2,-3,5)$. Verbesserungskandidaten sind die positiven Koeffizienten, also $x_3$, $x_6$ und $x_9$. Bland's Rule nimmt daraus den kleinsten Index, $x_3$, und nicht den steilsten Koeffizienten $5$ bei $x_9$. Beim Austritt liefert der Quotiententest die Werte $3,1,1,5$ zu $B=\{1,4,5,7\}$. Das Minimum $1$ wird doppelt erreicht, von Index $4$ und Index $5$; Bland's Rule entscheidet diesen Gleichstand ebenfalls über den kleinsten Index, also verlässt $x_4$ die Basis. Genau diese Doppelrolle der Regel, eintretende und austretende Variable festzulegen, macht sie zyklusfrei.}
+
+\end{document}
