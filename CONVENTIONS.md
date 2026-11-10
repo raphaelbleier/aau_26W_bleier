@@ -24,6 +24,7 @@ Immer eine `README.md` mit der Aufgabenübersicht und der erklärten Lösung.
 Die Ordner dieses Semesters wurden bereits vor dieser Konvention angelegt und bleiben unverändert:
 
 - `WebTechnologienUE/Assignment<NN>/` mit `ex<N>`-Unterordnern und `Antworten_Assignment<NN>.pdf`.
+- `LogischeProgrammierung/project1/` für Project 1 (Starlight); Projekte sind keine Blätter und bekommen eigene Ordner `project<NN>`.
 - `LinearOptimization/ueb<NN>/` mit `Bleier_sheet_<N>.tex` und `.pdf`.
 
 ## Sonstiges
