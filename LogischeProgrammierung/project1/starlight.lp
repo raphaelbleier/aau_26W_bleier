@@ -1,7 +1,7 @@
 % Please provide the names of your (up to three) group members:
 % - Raphael Bleier
-% -
-% -
+% - Fabio Schmickl
+% - Devis Mele
 
 % AUXILIARY PREDICATES
 
@@ -17,30 +17,39 @@ index(1..Z) :- size(Z).
 
 % (1) Define a predicate "cell(X,Y)" such that the indexes "X" and "Y" refer to an empty cell, which is not occupied by any planet. In the ASP Chef visualization (see below), the "cell(X,Y)" atoms will be indicated by a white background.
 
+% cell = alles im gitter wo kein planet sitzt, die richtung vom planet ist egal deswegen _ _ _
 cell(X,Y) :- index(X), index(Y), not planet(X,Y,_,_,_).
 
 % (2) Add choice rules that generate a predicate "assign(X,Y,V)" representing that an empty cell at the indexes "X" and "Y" contains a cloud ("V" is "-1") or a star ("V" is "1"). There must be exactly one cloud and one star per row or column, respectively. Moreover, the same cell cannot contain both a cloud and a star, which should be expressed by an integrity constraint.
 % The format of choice rules and integrity constraints is illustrated by the Sudoku encoding that can be viewed here: https://moodle.aau.at/mod/url/view.php?id=1509241
 
-1 { assign(X,Y,-1) : cell(X,Y) } 1 :- index(X).
-1 { assign(X,Y,1)  : cell(X,Y) } 1 :- index(X).
-1 { assign(X,Y,-1) : cell(X,Y) } 1 :- index(Y).
-1 { assign(X,Y,1)  : cell(X,Y) } 1 :- index(Y).
+% value(V) aus dem template nutzen, dann reichen zwei choice rules statt vier:
+% pro zeile X und pro wert V (wolke -1 / stern 1) genau ein assign, gleiches nochmal pro spalte Y
+1 = { assign(X,Y,V) : cell(X,Y) } :- index(X), value(V).
+1 = { assign(X,Y,V) : cell(X,Y) } :- index(Y), value(V).
 
+% stern und wolke nicht auf der gleichen zelle
 :- assign(X,Y,-1), assign(X,Y,1).
 
 % (3) Starting from facts "planet(X,Y,DX,DY,S)", specifying whether a planet at the indexes "X" and "Y" is dark ("S" is "-1") or illuminated ("S" is "1") in the direction indicated by "DX" and "DY", add rules that define a predicate "reach(X,Y,DX,DY,S,X',Y')" representing visible (empty) cells, which are not covered by any cloud in that direction. Such visible cells at indexes "X' = X + n*DX" and "Y' = Y + n*DY", for some positive integer "n", may be iteratively derived starting from planets (one rule) and then continuing (using a second rule) in case the cell at the indexes "X'" and "Y'" does not contain a cloud. The derived "reach(X,Y,DX,DY,S,X',Y')" atoms will be indicated by red arrows in the ASP Chef visualization (see below).
 
+% start: die erste zelle direkt neben dem planet in richtung (DX,DY), aber nur wenns eine leere zelle ist
+% -> planet oder rand stoppt die sichtlinie automatisch weil dort kein cell/2 existiert
+reach(X,Y,DX,DY,S,X+DX,Y+DY) :- planet(X,Y,DX,DY,S), cell(X+DX,Y+DY).
 
+% weiterlaufen: nächste zelle nur wenn auf der aktuellen keine wolke liegt
+% die wolkenzelle selber ist noch reach, erst dahinter ist schluss (dort kann eh kein stern sein, eine wolke pro zeile)
+reach(X,Y,DX,DY,S,XR+DX,YR+DY) :- reach(X,Y,DX,DY,S,XR,YR), cell(XR+DX,YR+DY), not assign(XR,YR,-1).
 
 % (4) Add any required auxiliary predicate(s) and integrity constraints making sure that dark sides of planets are not illuminated by a star, i.e., "assign(X',Y',1)" must not be true if "reach(X,Y,DX,DY,-1,X',Y')" holds, and some star is visible for illuminated sides, i.e., "assign(X',Y',1)" must be true for some cell such that "reach(X,Y,DX,DY,1,X',Y')" holds.
 
-reach(X,Y,DX,DY,S,XD,YD) :- planet(X,Y,DX,DY,S), XD = X+DX, YD = Y+DY, cell(XD,YD).
-reach(X,Y,DX,DY,S,XD,YD) :- reach(X,Y,DX,DY,S,X1,Y1), XD = X1+DX, YD = Y1+DY, cell(XD,YD), not assign(X1,Y1,-1).
+% dunkle seite (S = -1): kein stern darf in einer sichtbaren zelle liegen
+:- reach(_,_,_,_,-1,XR,YR), assign(XR,YR,1).
 
-:- reach(X,Y,DX,DY,-1,XD,YD), assign(XD,YD,1).
-
-1 { assign(XD,YD,1) : reach(X,Y,DX,DY,1,XD,YD) } :- planet(X,Y,DX,DY,1).
+% helle seite (S = 1): lit/4 sagt die seite sieht mind. einen stern, dann constraint wenn das fehlt
+% bewusst hilfsprädikat + constraint und keine choice rule, sonst würde die regel selbst sterne "erzeugen" statt nur zu testen
+lit(X,Y,DX,DY) :- reach(X,Y,DX,DY,1,XR,YR), assign(XR,YR,1).
+:- planet(X,Y,DX,DY,1), not lit(X,Y,DX,DY).
 
 % Once your encoding is complete, you may uncomment the below "#show" statement to restrict the output to atoms of the predicate "assign/3", while auxiliary predicates will then no longer be indicated in the ASP Chef visualization.
 
@@ -58,15 +67,15 @@ reach(X,Y,DX,DY,S,XD,YD) :- reach(X,Y,DX,DY,S,X1,Y1), XD = X1+DX, YD = Y1+DY, ce
 | instance03.lp |    4 |      1 |         0 |
 | instance04.lp |    4 |      1 |         0 |
 | instance05.lp |    5 |      1 |         0 |
-| instance06.lp |    5 |      1 |         1 |
+| instance06.lp |    5 |      1 |         2 |
 | instance07.lp |    6 |      1 |         2 |
-| instance08.lp |    6 |      1 |         0 |
+| instance08.lp |    6 |      1 |         2 |
 | instance09.lp |    7 |      1 |         1 |
-| instance10.lp |    7 |      1 |         2 |
-| instance11.lp |    8 |      1 |         2 |
-| instance12.lp |    8 |      1 |         1 |
+| instance10.lp |    7 |      1 |         6 |
+| instance11.lp |    8 |      1 |         3 |
+| instance12.lp |    8 |      1 |         3 |
 | instance13.lp |    9 |      1 |         0 |
-| instance14.lp |    9 |      1 |         2 |
+| instance14.lp |    9 |      1 |         4 |
 ---------------------------------------------
 *%
 
