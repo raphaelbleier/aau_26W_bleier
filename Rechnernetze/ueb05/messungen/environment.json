@@ -1,0 +1,10 @@
+{
+  "kernel": "7.0.14-20-pve",
+  "iperf3": "iperf 3.18 (cJSON 1.7.15)",
+  "seconds_per_run": 6,
+  "repetitions": 1,
+  "bandwidth_mbps_per_link": 10,
+  "capture_interface": "client-eth0",
+  "offload": "TSO/GSO/GRO disabled",
+  "date": "2026-11-17"
+}

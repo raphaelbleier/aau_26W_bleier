@@ -8,6 +8,7 @@
 | 2.1, 2.2, 2.4–2.12 | Internetarchitektur, Schichten, Protokolle, WLAN, Streaming, Wireshark | Gruppe Horvath: 10.11.2026, 08:00; Alkhateeb: 11.11.2026, 11:00 | [Lösung](ueb02/loesung_blatt02.pdf), [Erklärung](ueb02/erklaerung_blatt02.pdf), [Hinweise und Quelle](ueb02/README.md) |
 | 3.1–3.5 | POP3-Client und -Server, HTTP/0.9, HTTP/1.0, Keep-Alive, Threads und Logging | Beide Moodle-Gruppen: 17.11.2026, 08:00 | [Code und Testbericht](ueb03/README.md), [Lösung](ueb03/loesung_blatt03.pdf), [Erklärung](ueb03/erklaerung_blatt03.pdf) |
 | 4.1–4.6 | Mininet, UDP, tcpdump, RN-Lab-Routing, TCP-Client und -Server | Beide Moodle-Gruppen: 24.11.2026, 08:00 | [Code und Erklärung](ueb04/README.md), [KI-Kennzeichnung](ueb04/KI_NUTZUNG.md) |
+| 5.1–5.7 | TCP-Handshake, Längenpräfix, Sequenznummern, Verlust, Latenz, iperf3 TCP/UDP | Beide Moodle-Gruppen: 01.12.2026, 08:00 | [Lösung](ueb05/loesung_blatt05.pdf), [Erklärung](ueb05/erklaerung_blatt05.pdf), [Code und Messdaten](ueb05/README.md) |
 | 6.1–6.7 | IP-Adressen, statische Routen, Subnetting, Dijkstra, Distance-Vector, zweiter Client | Horvath: 15.12.2026, 08:00; Alkhateeb: 15.12.2026, 10:00 | [Lösung](ueb06/loesung_blatt06.pdf), [Erklärung](ueb06/erklaerung_blatt06.pdf), [Topologie](ueb06/topology.py) |
 | 7.1–7.5 | Routingpfad, r3, zwei Pfade, Linkverzögerung, Fehlersuche, CSMA | Beide Moodle-Gruppen: 12.01.2027, 08:00 | [Lösung](ueb07/loesung_blatt07.pdf), [Erklärung](ueb07/erklaerung_blatt07.pdf), [Topologie](ueb07/topology.py) |
 | 8.1–8.5 | Ethernet-Frames, ARP, Switch-Learning, Router zwischen zwei LANs, Schichten | Beide Moodle-Gruppen: 19.01.2027, 08:00 | [Code und Erklärung](ueb08/README.md), [Zwei-LAN-Topologie](ueb08/topology_routed.py), [KI-Kennzeichnung](ueb08/KI_NUTZUNG.md) |
@@ -17,6 +18,6 @@ Die Aufgaben 1.1 bis 1.7 sind vorbereitet und getestet. Die offizielle Abgabe br
 
 Blatt 6, Blatt 7, Blatt 8 und Blatt 9 sind mit Gruppe 1 (Raphael Bleier, Devis, Fabio) beschriftet. Welche der beiden Abgaben das ist, habe ich nicht geprüft. Nichts wurde hochgeladen.
 
-Blatt 5 hat in Moodle noch die Datei von Übungsblatt 02. Dafür liegt hier keine Lösung.
+Blatt 5 verwendet die am 17.11.2026 veröffentlichte korrigierte Angabe. Die Lösung enthält echte Mininet-Messungen für alle sieben Aufgaben; die alte, falsch verlinkte Datei von Blatt 2 wurde dafür nicht verwendet.
 
 Generative KI ist laut Aufnahmefolien zur LV erlaubt, muss aber gekennzeichnet werden. Die Programme nennen das verwendete Tool, Modell, Datum und den jeweiligen Prompt am Dateianfang.

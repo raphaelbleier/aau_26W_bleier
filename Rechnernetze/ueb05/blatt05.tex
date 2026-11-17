@@ -1,0 +1,367 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,longtable,graphicx}
+\usepackage{xcolor,tikz,pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\emergencystretch}{2em}
+\providecommand{\explainmode}{0}
+\newif\ifexplain
+\ifnum\explainmode=1 \explaintrue\fi
+\newcommand{\aufgabe}[1]{\section*{Aufgabe #1}}
+\newcommand{\angabe}[1]{\textit{#1}\par\smallskip}
+\newcommand{\why}[1]{\text{\small\color{black!65}#1}}
+\newtcolorbox{erklbox}{colback=blue!4,colframe=blue!40,breakable,boxrule=0.5pt,title={Erklärung}}
+\newcommand{\explain}[1]{\ifexplain\begin{erklbox}#1\end{erklbox}\fi}
+\newcommand{\explainfig}[1]{\ifexplain\begin{center}#1\end{center}\fi}
+\begin{document}
+\begin{center}
+{\Large Übungsblatt 05: TCP, Netzwerkleistung und Wireshark}\\
+\ifexplain Erklärung\else Lösung\fi\\
+Raphael Bleier, Gruppe 1 (Devis, Fabio, Raphael)\\
+PR Rechnernetze und Netzwerkprogrammierung, 621.801/621.802, WS 2026/27
+\end{center}
+
+Die Versuche liefen am 17.11.2026 in der vorgegebenen Topologie
+\texttt{client -- router -- server}. Client: \texttt{10.0.1.2/24}, Server:
+\texttt{10.0.2.2/24}; Router: \texttt{10.0.1.1} und \texttt{10.0.2.1}.
+Beide Links sind für diese Messreihe auf jeweils 10 Mbit/s begrenzt.
+Die eingestellte Verzögerung und der Verlust gelten je Link und Richtung.
+TSO, GSO und GRO wurden für die Messung abgeschaltet. Aufzeichnung:
+\texttt{client-eth0}. TCP nutzt \texttt{cubic}, iperf3 Version 3.18.
+Die Messdateien und Programme liegen im selben Blattordner.
+
+\aufgabe{5.1}
+\angabe{Starten Sie die Umgebung und den TCP-Server, führen Sie den Client aus und zeichnen Sie die Verbindung auf. Analysieren Sie SYN, SYN/ACK und ACK. Dokumentieren Sie Ports, Flags, Sequence Number, Acknowledgement Number und Window Size. Welche Sequenznummer verwendet das SYN, welche bestätigt der Server, und warum zählt das SYN mit?}
+
+\texttt{handshake.pcap} enthält den eigenen Python-Client und den Server auf
+Port 5000, bei 20 ms und 0\,\% Verlust je Link. Die ersten drei Pakete:
+\begin{center}\small
+\begin{tabular}{rrrrrrr}\toprule
+Nr. & Richtung/Ports & Flags & SEQ rel. & ACK rel. & SEQ roh & Window\\\midrule
+1 & C--S:58990/5000 & SYN & 0 & -- & 12754922 & 64240\\
+2 & S--C:5000/58990 & SYN/ACK & 0 & 1 & 3439422884 & 65160\\
+3 & C--S:58990/5000 & ACK & 1 & 1 & 12754923 & 63\\
+\bottomrule\end{tabular}\end{center}
+C steht für den Client, S für den Server. Im SYN ist das ACK-Feld nicht gültig.
+Die rohe Client-ISN lautet 12754922, die Server-ISN 3439422884.
+Der Server bestätigt im SYN/ACK roh 12754923, also die nächste erwartete
+Client-Sequenznummer. Der Client bestätigt danach roh 3439422885.
+\begin{align*}
+\mathrm{ACK}_{S} &= 12754922 + 1 && \why{SYN belegt einen Sequenzplatz}\\
+&= 12754923 && \why{Addition}\\
+\mathrm{ACK}_{C} &= 3439422884 + 1 && \why{Server-SYN bestätigen}\\
+&= 3439422885 && \why{Addition}
+\end{align*}
+Probe: Die beiden Ergebnisse stimmen mit den rohen ACK-Feldern der Pakete
+2 und 3 überein. Window bezeichnet in der Tabelle den unskalierten 16-Bit-Wert.
+Beide SYNs kündigen den Window-Scale-Exponent 10 an. Im dritten Paket ist das effektive Clientfenster daher $ 63\cdot 2^{10}$ Byte, also 64512 Byte. SYN-Fenster werden selbst noch nicht skaliert.
+\[\boxed{\text{SYN verbraucht eine Sequenznummer; ein reines ACK keine.}}\]
+\explain{Die Initial Sequence Number (ISN) ist die Startnummer einer Richtung.
+Wireshark zeigt sie normalerweise relativ als 0 an. Das heißt nicht, dass im
+TCP-Header eine 0 steht. Beide Richtungen haben ihre eigene Nummerierung.
+Das SYN gehört in den Sequenzraum, damit ein wiederholtes SYN als dasselbe
+Steuerereignis erkannt und bestätigt werden kann. Sonst könnte ein verloren
+gegangenes SYN nicht auf dieselbe Weise behandelt werden wie verlorene Daten.
+Window ist dagegen der Empfangspuffer, den die Gegenseite gerade anbietet.
+Es ist nicht das Congestion Window des Senders.}
+
+\aufgabe{5.2}
+\angabe{Senden Sie mehrere kurze Nachrichten über eine persistente Verbindung. Variieren Sie recv() auf dem Server. Bleiben send()-Grenzen erhalten? Warum garantiert recv(1024) keine 1024 Bytes? Ergänzen Sie ein Längenpräfix als Framing.}
+
+Der Rohdaten-Client sendet nacheinander \texttt{Hello\textbackslash n},
+\texttt{from\textbackslash n}, \texttt{Python\textbackslash n} und
+\texttt{and Mininet!\textbackslash n}. Die Nutzlängen sind 6, 5, 7 und 13 Byte.
+Es sind insgesamt 31 Byte über dieselbe Verbindung.
+Gemessene Empfangsgrößen (aus \texttt{raw-recv-*.log}):
+\begin{center}\begin{tabular}{rl}\toprule
+recv-Limit & Tatsächliche Bytes je recv-Aufruf\\\midrule
+1 & 31 Aufrufe mit je 1 Byte\\
+8 & 8, 8, 8, 7\\
+1024 & 31\\
+\bottomrule\end{tabular}\end{center}
+Die Empfangsgrenzen stimmen damit nicht mit den vier Sendelängen überein.
+TCP liefert einen geordneten Byte-Stream. Ein Aufruf \texttt{recv(1024)}
+liefert höchstens 1024 Byte, kann aber vorher mit weniger verfügbaren Bytes
+zurückkehren. Ein leeres Ergebnis bedeutet das geordnete Ende der Verbindung.
+
+Die Erweiterung besteht aus \texttt{framing.py}, \texttt{tcp\_server.py}
+und \texttt{tcp\_client.py}. Das Format ist ein Vier-Byte-Präfix
+(\texttt{!I}, vorzeichenlos, Big Endian), danach genau so viele Nutzbytes.
+Die Länge zählt Bytes, nicht Zeichen. \texttt{recv\_exact} liest in einer
+Schleife bis zur geforderten Länge. \texttt{sendall} sendet den vollständigen
+Frame; ein einzelnes \texttt{send} könnte nur einen Teil davon senden.
+Der Server verarbeitet mehrere Frames derselben Verbindung und sendet
+jeweils ein gerahmtes Echo. Frames über 4 MiB werden abgelehnt.
+Ein Abbruch mitten im Header oder Payload löst \texttt{EOFError} aus.
+Ein leerer Frame ist erlaubt und bleibt von EOF unterscheidbar.
+\[\boxed{\text{Frame: vier Byte Länge, danach genau diese Anzahl Nutzbytes.}}\]
+Probe: Sieben Testmethoden prüfen fragmentierte Header und Nutzdaten,
+zusammenhängende Frames, Leerframe, UTF-8, Überlänge, Abbruch sowie echte
+TCP-Prozesse mit recv-Limits 1, 8 und 1024. Alle Tests bestanden.
+Der Mininet-Client bestätigt zusätzlich vier kurze Nachrichten und einen
+65536-Byte-Block durch bytegleichen Echo-Vergleich.
+\explain{TCP muss die Grenzen der send-Aufrufe nicht übertragen. Ein Sender
+kann etwa viermal fünf Byte schreiben; der Empfänger kann daraus zweimal
+acht Byte und einmal vier Byte lesen. Auch das ist korrekt.
+Das Längenpräfix legt die Grenze erst in unserem Anwendungsprotokoll fest.
+Zuerst warten wir auf vier Headerbytes, dann auf die angegebene Nutzlast.
+Dabei darf jeder recv-Aufruf weniger liefern als angefordert.
+Bei UTF-8 hat ein Umlaut mehr als ein Byte. Deshalb wird zuerst codiert,
+dann die Byte-Länge in das Präfix geschrieben. Eine Größenbegrenzung verhindert,
+dass ein fremder Header eine beliebig große Speicheranforderung auslöst.}
+
+\aufgabe{5.3}
+\angabe{Übertragen Sie eine größere Datenmenge. Vergleichen Sie für mindestens fünf Segmente Sequence Number, Payload Length und Acknowledgement Number. Zeigen Sie, dass TCP Bytes zählt.}
+
+Der Client sendet zusätzlich einen Frame mit 65536 Nutzbytes.
+Das Präfix dieses Frames belegt weitere vier TCP-Nutzbytes.
+Die folgende Tabelle verwendet relative Werte aus demselben Mitschnitt.
+ACK-Nr. nennt das erste danach beobachtete Serverpaket, dessen kumulatives ACK
+den betrachteten Bytebereich vollständig bestätigt.
+\begin{center}\small\begin{tabular}{rrrrrrr}\toprule
+Paket & SEQ & Länge & Nächste SEQ & ACK-Paket & ACK & ACK-Feld im Datenpaket\\\midrule
+14 & 48 & 1448 & 1496 & 24 & 2944 & 48\\
+15 & 1496 & 1448 & 2944 & 24 & 2944 & 48\\
+16 & 2944 & 1448 & 4392 & 25 & 5840 & 48\\
+17 & 4392 & 1448 & 5840 & 25 & 5840 & 48\\
+18 & 5840 & 1448 & 7288 & 26 & 8736 & 48\\
+\bottomrule\end{tabular}\end{center}
+\begin{align*}
+\mathrm{Ende}_{14} &= 48+1448 && \why{SEQ plus Nutzlänge}\\
+&= 1496 && \why{Addition}
+\end{align*}
+\begin{align*}
+\mathrm{Ende}_{15} &= 1496+1448 && \why{SEQ plus Nutzlänge}\\
+&= 2944 && \why{Addition}
+\end{align*}
+\begin{align*}
+\mathrm{Ende}_{16} &= 2944+1448 && \why{SEQ plus Nutzlänge}\\
+&= 4392 && \why{Addition}
+\end{align*}
+\begin{align*}
+\mathrm{Ende}_{17} &= 4392+1448 && \why{SEQ plus Nutzlänge}\\
+&= 5840 && \why{Addition}
+\end{align*}
+\begin{align*}
+\mathrm{Ende}_{18} &= 5840+1448 && \why{SEQ plus Nutzlänge}\\
+&= 7288 && \why{Addition}
+\end{align*}
+Alle fünf Bytebereiche sind damit einzeln nachgerechnet.
+Probe: In jeder Zeile ist das tatsächlich empfangene ACK
+mindestens so groß wie das Ende des übertragenen Bereichs.
+\[\boxed{\text{Nächste SEQ ist SEQ plus TCP-Nutzlänge, nicht plus eins je Paket.}}\]
+\explain{Ein ACK von 1001 sagt: Alle Bytes vor 1001 sind angekommen, als
+Nächstes fehlt Byte 1001. Es ist keine Paketnummer. Wenn ein ACK gleich
+mehrere Segmente bestätigt, steht deshalb nicht für jedes Segment ein eigenes
+ACK im Mitschnitt. Der ACK-Wert im Datenpaket selbst bestätigt die Gegenrichtung;
+er gehört nicht zur eigenen Payload. Das Vier-Byte-Längenpräfix ist für TCP
+normale Nutzlast und zählt daher ebenfalls mit.}
+
+\aufgabe{5.4}
+\angabe{Verändern Sie topology.py und messen Sie bei 0, 5 und 10 Prozent Verlust mit LINK\_DELAY = 20ms. Suchen Sie Duplicate ACKs, Retransmissions und Out-of-order-Segmente. Erklären Sie die Abfolge.}
+
+Die Netzstruktur bleibt unverändert. \texttt{LINK\_DELAY} und
+\texttt{LINK\_LOSS} lassen sich über Umgebungsvariablen setzen.
+Die Messautomatik setzt dieselben Modulwerte je Versuch.
+Der folgende Vergleich zählt Wireshark-Markierungen am Clientinterface.
+Fast Retransmissions sind eine gesonderte Markierung und werden nicht zur
+normalen Retransmission-Spalte addiert, ohne eine mögliche Überlappung zu prüfen.
+\begin{center}\begin{tabular}{rrrrr}\toprule
+Verlust je Link & Retransmission & Fast Retransmission & Duplicate ACK & Out-of-order\\\midrule
+0 & 0 & 0 & 0 & 0\\
+5 & 19 & 8 & 50 & 6\\
+10 & 37 & 14 & 53 & 9\\
+\bottomrule\end{tabular}\end{center}
+
+Tatsächlicher Ausschnitt aus dem Versuch mit 5\,\% Verlust;
+\texttt{tcp-d20-p5-packets.tsv} enthält die vollständigen Headerdaten:
+\begin{center}\small\begin{tabular}{rrrrrrl}\toprule
+Paket & Zeit [s] & Richtung & SEQ & Länge & ACK & Markierung\\\midrule
+32 & 0,461539 & S--C & 1 & 0 & 2934 & --\\
+33 & 0,463710 & S--C & 1 & 0 & 2934 & Dup. ACK\\
+34 & 0,468561 & S--C & 1 & 0 & 2934 & Dup. ACK\\
+35 & 0,469764 & S--C & 1 & 0 & 2934 & Dup. ACK\\
+39 & 0,482740 & C--S & 17166 & 1448 & 1 & --\\
+40 & 0,482742 & C--S & 18614 & 1448 & 1 & --\\
+41 & 0,485133 & C--S & 20062 & 1448 & 1 & --\\
+42 & 0,488610 & C--S & 2934 & 1200 & 1 & Retrans., Fast Retrans.\\
+\bottomrule\end{tabular}\end{center}
+In Paket 33 bleibt das ACK bei 2934 stehen, obwohl danach weitere Segmente gesendet werden. Paket 42 wird von Wireshark als Retrans., Fast Retrans. eingeordnet und beginnt bei SEQ 2934. Die Tabelle zeigt ausgewählte Pakete dieses Datenflows (Clientport 49332); dazwischenliegende Pakete sind in der TSV-Datei enthalten. Out-of-order-Markierungen wurden bei den beiden Verluststufen tatsächlich gefunden, im verlustfreien Versuch dagegen nicht.
+\[\boxed{\text{Die Bestätigung bleibt an einer Byte-Lücke stehen; TCP sendet fehlende Bytes erneut.}}\]
+\explain{Wenn ein Segment fehlt, können später gesendete Segmente trotzdem
+ankommen. Der Empfänger bestätigt weiter das erste fehlende Byte. Das erzeugt
+Duplicate ACKs. Genügend solche ACKs oder weitere Verlustsignale können eine
+schnelle Wiederholung auslösen; sonst greift ein Wiederholungstimer.
+Am Clientinterface sehen wir nur einen Ausschnitt des gesamten Pfads.
+Die Platzierung des Mitschnitts relativ zu den lokalen Queueing-Disziplinen
+beeinflusst, welche ausgehenden Segmente sichtbar sind.
+Wir können den Verlustort damit nicht einem Link zuordnen.
+Out-of-order ist eine Wireshark-Heuristik, kein Beweis für absichtlich
+umgeordnete Links. Hier ist keine zusätzliche Reordering-Regel eingestellt.
+Die iperf3-Retransmissions und Wireshark-Zähler sind verschiedene Messgrößen:
+ein Senderzähler einerseits, aus einem Mitschnitt abgeleitete Markierungen andererseits.}
+
+\aufgabe{5.5}
+\angabe{Variieren Sie mit iperf3 die Linkverzögerung (0, 10, 20, 50 ms) und den Paketverlust. Dokumentieren Sie Durchsatz und Retransmissions und stellen Sie die Ergebnisse geeignet dar.}
+
+Jeder Versuch dauert sechs Sekunden, ohne ausgelassene Anlaufphase.
+Der TCP-Client verwendet \texttt{iperf3 -c 10.0.2.2 -t 6 -l 4096 -J}.
+Durchsatz ist der Empfängerwert aus \texttt{sum\_received};
+Retransmissions ist der Senderwert aus \texttt{sum\_sent}.
+Die JSON-Dateien enthalten die tatsächlichen Zeitfenster, die beim Empfänger
+wegen Laufzeit und Ende des Versuchs etwas länger sein können.
+\begin{center}\begin{tabular}{rrrr}\toprule
+Delay je Link [ms] & Verlust je Link [\%] & Empfänger [Mbit/s] & Retransmissions\\\midrule
+0 & 0 & 9,563 & 0\\
+0 & 5 & 1,560 & 107\\
+0 & 10 & 0,431 & 47\\
+10 & 0 & 9,437 & 0\\
+10 & 5 & 0,857 & 42\\
+10 & 10 & 0,358 & 47\\
+20 & 0 & 7,748 & 0\\
+20 & 5 & 0,345 & 24\\
+20 & 10 & 0,257 & 41\\
+50 & 0 & 8,438 & 0\\
+50 & 5 & 0,227 & 13\\
+50 & 10 & 0,100 & 17\\
+\bottomrule\end{tabular}\end{center}
+
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}
+\begin{axis}[ybar,bar width=9pt,width=0.92\linewidth,height=6cm,ymin=0,
+ ylabel={Empfänger-Durchsatz [Mbit/s]},xlabel={Delay je Link [ms]},
+ symbolic x coords={0,10,20,50},xtick=data,
+ legend style={at={(0.5,1.03)},anchor=south,legend columns=3,column sep=8pt}]
+\addplot coordinates {(0,9.563312) (10,9.436698) (20,7.747640) (50,8.438278)};
+\addplot coordinates {(0,1.560413) (10,0.856991) (20,0.344849) (50,0.227203)};
+\addplot coordinates {(0,0.431328) (10,0.358018) (20,0.257064) (50,0.100407)};
+\legend{0\,\%,5\,\%,10\,\%}
+\end{axis}\end{tikzpicture}\end{center}
+
+Bei zwei Links mit je $d$ Millisekunden ist die zusätzliche Einweglatenz
+$2d$ und die zusätzliche RTT $4d$. Bei 20 ms je Link:
+\begin{align*}
+\mathrm{RTT}_{\mathrm{Link}} &= 4\cdot20\,\mathrm{ms} && \why{vier gerichtete Linkdurchläufe}\\
+&= 80\,\mathrm{ms} && \why{Multiplikation}
+\end{align*}
+Probe: zwei vorwärts und zwei rückwärts durchlaufene Links zählen zusammen vier.
+Das ist ohne Warteschlangen und Verarbeitung, nicht eine gemessene konstante RTT.
+Bei 20 ms je Link sinkt der gemessene TCP-Durchsatz von 7,748 Mbit/s ohne Verlust auf 0,257 Mbit/s bei 10\,\% Verlust je Link. Die zugehörigen Senderzähler sind 0 und 41 Wiederholungen. Auch das Aufzeichnen kann den kurzen Versuch beeinflussen.
+Es gibt nur einen erfolgreichen Lauf je Konfiguration und keinen festgelegten
+Zufallsseed. Die Werte sind daher Einzelmessungen, keine statistisch
+abgesicherte Rangfolge der Verzögerungsstufen.
+\[\boxed{\text{Mehr Verlust verursacht hier Wiederholungen und deutlich weniger TCP-Nutzdurchsatz.}}\]
+\explain{TCP passt sein Sendefenster an die Rückmeldungen an. Bei größerer
+RTT kommt eine Rückmeldung später. Verlorene Daten müssen erneut gesendet
+werden und die Überlastkontrolle reduziert die Sendemenge.
+Ohne Verlust kann ein ausreichend großes Fenster die Leitung trotzdem füllen.
+Deshalb muss sich der Durchsatz nicht halbieren, wenn sich die RTT verdoppelt.
+Die 10-Mbit/s-Grenze betrifft den Link, der iperf-Wert die Anwendungsdaten.
+Header und Anlaufphase erklären einen Teil der Differenz.
+Vier Kilobyte je iperf-Schreibblock erleichtern bei hohem Verlust die zeitnahe
+Empfängerzählung; das ändert nicht die MTU oder die TCP-Segmentgröße.}
+
+\aufgabe{5.6}
+\angabe{Führen Sie vergleichbare UDP-Tests mit iperf3 durch. Vergleichen Sie Durchsatz, Paketverlust und das Verhalten bei hoher angebotener Datenrate. Verwenden Sie zum Beispiel iperf3 -c 10.0.2.2 -u -b 10M.}
+
+Für UDP bleiben Topologie, 20 ms Delay je Link, Verluststufen und sechs Sekunden
+gleich. Der Client setzt zusätzlich \texttt{-u -b 10M -l 1200} bzw.
+\texttt{-u -b 50M -l 1200}. TCP nutzt im Vergleich keine feste angebotene Rate.
+UDP-Durchsatz und Zähler stammen vom Empfänger, nicht von der angeforderten Rate.
+Die Verlustquote ist hier aus \texttt{lost\_packets/packets} berechnet.
+Das von iperf3 zusätzlich ausgegebene Prozentfeld weicht in einigen Läufen
+im Bereich von Hundertstel-Prozentpunkten davon ab; es bleibt in den
+Original-JSON-Dateien und als \texttt{reported\_lost\_percent} erhalten.
+\begin{center}\small\begin{tabular}{rrrrr}\toprule
+Verlust je Link [\%] & Angebot [Mbit/s] & Empfang [Mbit/s] & verlorene Datagramme & Verlust [\%]\\\midrule
+0 & 10 & 9,540 & 0/6252 & 0,00\\
+0 & 50 & 9,554 & 24232/31253 & 77,53\\
+5 & 10 & 8,899 & 614/6251 & 9,82\\
+5 & 50 & 9,071 & 24586/31252 & 78,67\\
+10 & 10 & 7,975 & 1198/6250 & 19,17\\
+10 & 50 & 8,586 & 24943/31253 & 79,81\\
+\bottomrule\end{tabular}\end{center}
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}
+\begin{axis}[ybar,bar width=12pt,width=0.92\linewidth,height=6cm,ymin=0,
+ylabel={Empfänger-Durchsatz [Mbit/s]},xlabel={Verlust je Link [\%]},
+symbolic x coords={0,5,10},xtick=data,
+legend style={at={(0.5,1.03)},anchor=south,legend columns=3,column sep=8pt}]
+\addplot coordinates {(0,7.747640) (5,0.344849) (10,0.257064)};
+\addplot coordinates {(0,9.540395) (5,8.898865) (10,7.974951)};
+\addplot coordinates {(0,9.553513) (5,9.070675) (10,8.586296)};
+\legend{TCP,UDP 10M,UDP 50M}
+\end{axis}\end{tikzpicture}\end{center}
+
+Schon ohne Zufallsverlust gehen bei 50 Mbit/s Angebot 77,53\,\% der UDP-Datagramme verloren. Der Empfänger erreicht dabei 9,554 Mbit/s. Mit 10\,\% Verlust je Link liegen diese Werte bei 79,81\,\% und 8,586 Mbit/s. Ein hohes UDP-Angebot erhöht also nicht beliebig den nutzbaren Durchsatz.
+UDP wiederholt verlorene Datagramme nicht. Die Anwendungsdaten können daher
+weiter eintreffen, obwohl Datagramme fehlen. TCP liefert dagegen nur den
+geordneten, lückenlosen Byte-Stream an die Anwendung.
+\[\boxed{\text{50 Mbit/s Angebot passen nicht durch einen 10-Mbit/s-Link.}}\]
+\explain{iperf3 kann mit UDP mehr senden, als das Netz weiterleiten kann.
+Dann gehen Datagramme schon durch die Überlast des Linkpuffers verloren.
+Die zusätzliche Zufallsverlustrate kommt dazu. Zwei unabhängige Links mit
+je 5 Prozent Verlust haben für ein Datagramm eine Überlebenschance von
+$0{,}95\cdot0{,}95$. Das entspricht 9,75 Prozent Verlust über beide Links,
+nicht bloß fünf Prozent. Bei zehn Prozent je Link sind es 19 Prozent.
+Diese Erwartungswerte gelten ohne zusätzliche Überlast, nicht für den
+50M-Versuch. Außerdem nutzt iperf3 auch beim UDP-Test einen TCP-Steuerkanal.
+Ein gescheiterter Steuerkanal wäre keine gemessene UDP-Rate; solche Versuche
+werden nicht als erfolgreiche Messung verwendet.}
+
+\aufgabe{5.7}
+\angabe{Erstellen Sie ein kleines Sequenzdiagramm eines TCP-Flows. Markieren Sie Handshake, Datenübertragung, ACKs und gegebenenfalls eine Retransmission. Tragen Sie tatsächlich beobachtete Wireshark-Werte ein.}
+
+Das Diagramm zeigt ausgewählte Pakete desselben Python-Flows aus
+\texttt{handshake.pcap}. SEQ und ACK sind relativ. Der Echo-Server bestätigt
+Daten teilweise zusammen mit seiner eigenen Nutzlast.
+\begin{center}
+% grafik-verlangt
+\begin{tikzpicture}[x=1cm,y=0.72cm,>=stealth]
+\draw (0,0) node[above]{Client :58990} -- (0,-11);
+\draw (11,0) node[above]{Server :5000} -- (11,-11);
+\draw[->] (0,-1) -- node[above,fill=white,font=\scriptsize]{Nr. 1: SYN, SEQ 0, Länge 0} (11,-1);
+\draw[->] (11,-2) -- node[above,fill=white,font=\scriptsize]{Nr. 2: SYN/ACK, SEQ 0, ACK 1, Länge 0} (0,-2);
+\draw[->] (0,-3) -- node[above,fill=white,font=\scriptsize]{Nr. 3: ACK, SEQ 1, ACK 1, Länge 0} (11,-3);
+\draw[->] (0,-4) -- node[above,fill=white,font=\scriptsize]{Nr. 4: PSH/ACK, SEQ 1, ACK 1, Länge 10} (11,-4);
+\draw[->] (11,-5) -- node[above,fill=white,font=\scriptsize]{Nr. 5: ACK, SEQ 1, ACK 11, Länge 0} (0,-5);
+\draw[->] (11,-6) -- node[above,fill=white,font=\scriptsize]{Nr. 6: PSH/ACK, SEQ 1, ACK 11, Länge 10} (0,-6);
+\draw[->] (0,-7) -- node[above,fill=white,font=\scriptsize]{Nr. 7: ACK, SEQ 11, ACK 11, Länge 0} (11,-7);
+\draw[->] (0,-8) -- node[above,fill=white,font=\scriptsize]{Nr. 8: PSH/ACK, SEQ 11, ACK 11, Länge 9} (11,-8);
+\draw[->] (11,-9) -- node[above,fill=white,font=\scriptsize]{Nr. 9: PSH/ACK, SEQ 11, ACK 20, Länge 9} (0,-9);
+\draw[->] (0,-10) -- node[above,fill=white,font=\scriptsize]{Nr. 10: PSH/ACK, SEQ 20, ACK 20, Länge 11} (11,-10);
+\end{tikzpicture}\end{center}
+Im gezeigten Python-Flow wurde keine Wiederholung markiert.
+Die gemessene Wiederholung aus dem Verlustversuch steht separat bei 5.4;
+sie gehört zu einem anderen TCP-Flow und wird nicht in dieses Diagramm gemischt.
+\[\boxed{\text{Handshake, Bytezählung und Bestätigungen stammen aus einem tatsächlichen Flow.}}\]
+\explain{Ein Pfeil ist hier ein aufgezeichnetes Segment, kein Python-Aufruf.
+Das Echo enthält unser Längenpräfix und die Nachricht. Die ACKs zählen deshalb
+auch die vier Präfixbytes. Ein ACK ohne Payload bewegt die eigene
+Sequenznummer nicht weiter. Ausgewählte Pakete reichen für das Diagramm;
+die vollständige Verbindung einschließlich Abschluss steht im Mitschnitt.}
+
+\section*{Quellen und Kennzeichnung}
+Angabe: Moodle-Ressource 1535103, \emph{RN WS26 Uebungsblatt-05 TCP Wireshark},
+zwei Seiten; Vorlage: Ressource 1506949, \texttt{uebb5\_template.zip}.
+\texttt{start\_lab.py} wurde unverändert übernommen.
+TCP-Definitionen: RFC 9293, Abschnitte 3.4 und 3.5,
+\url{https://www.rfc-editor.org/rfc/rfc9293.html}.
+
+KI-Kennzeichnung gemäß Aufnahmefolien, Seite 18:
+Hermes Agent v0.22.2+2275.gc9dce2c (2026.9.24), Modell gpt-6.1-sol,
+17.11.2026. Anfrage: Aufgaben 5.1 bis 5.7 lösen, Framing implementieren,
+echte Mininet-Messungen durchführen und anhand der Mitschnitte erklären.
+Die Teilanfragen stehen in den Programmen und in \texttt{KI\_NUTZUNG.md}.
+Es wurde nichts auf Moodle eingereicht.
+\end{document}

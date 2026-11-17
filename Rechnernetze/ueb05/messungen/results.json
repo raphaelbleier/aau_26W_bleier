@@ -1,0 +1,182 @@
+[
+  {
+    "name": "tcp-d0-p0",
+    "protocol": "tcp",
+    "delay_ms_per_link": 0,
+    "loss_pct_per_link": 0,
+    "offered_mbps": null,
+    "mbps": 9.563311735848247,
+    "retransmits": 0
+  },
+  {
+    "name": "tcp-d0-p5",
+    "protocol": "tcp",
+    "delay_ms_per_link": 0,
+    "loss_pct_per_link": 5,
+    "offered_mbps": null,
+    "mbps": 1.5604129088890764,
+    "retransmits": 107
+  },
+  {
+    "name": "tcp-d0-p10",
+    "protocol": "tcp",
+    "delay_ms_per_link": 0,
+    "loss_pct_per_link": 10,
+    "offered_mbps": null,
+    "mbps": 0.4313276527720687,
+    "retransmits": 47
+  },
+  {
+    "name": "tcp-d10-p0",
+    "protocol": "tcp",
+    "delay_ms_per_link": 10,
+    "loss_pct_per_link": 0,
+    "offered_mbps": null,
+    "mbps": 9.43669818669346,
+    "retransmits": 0
+  },
+  {
+    "name": "tcp-d10-p5",
+    "protocol": "tcp",
+    "delay_ms_per_link": 10,
+    "loss_pct_per_link": 5,
+    "offered_mbps": null,
+    "mbps": 0.8569912815165868,
+    "retransmits": 42
+  },
+  {
+    "name": "tcp-d10-p10",
+    "protocol": "tcp",
+    "delay_ms_per_link": 10,
+    "loss_pct_per_link": 10,
+    "offered_mbps": null,
+    "mbps": 0.3580180716778439,
+    "retransmits": 47
+  },
+  {
+    "name": "udp-d20-p0-10M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 0,
+    "offered_mbps": 10,
+    "mbps": 9.5403954182602,
+    "lost_percent": 0.0,
+    "lost_packets": 0,
+    "packets": 6252,
+    "reported_lost_percent": 0
+  },
+  {
+    "name": "udp-d20-p0-50M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 0,
+    "offered_mbps": 50,
+    "mbps": 9.553512859516799,
+    "lost_percent": 77.53495664416216,
+    "lost_packets": 24232,
+    "packets": 31253,
+    "reported_lost_percent": 77.53495664416216
+  },
+  {
+    "name": "udp-d20-p5-10M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 5,
+    "offered_mbps": 10,
+    "mbps": 8.898865096729477,
+    "lost_percent": 9.822428411454167,
+    "lost_packets": 614,
+    "packets": 6251,
+    "reported_lost_percent": 9.822428411454167
+  },
+  {
+    "name": "udp-d20-p5-50M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 5,
+    "offered_mbps": 50,
+    "mbps": 9.070674567069391,
+    "lost_percent": 78.670165109433,
+    "lost_packets": 24586,
+    "packets": 31252,
+    "reported_lost_percent": 78.6651308632495
+  },
+  {
+    "name": "udp-d20-p10-10M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 10,
+    "offered_mbps": 10,
+    "mbps": 7.974950677816215,
+    "lost_percent": 19.168,
+    "lost_packets": 1198,
+    "packets": 6250,
+    "reported_lost_percent": 19.1649336106223
+  },
+  {
+    "name": "udp-d20-p10-50M",
+    "protocol": "udp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 10,
+    "offered_mbps": 50,
+    "mbps": 8.58629591678936,
+    "lost_percent": 79.8099382459284,
+    "lost_packets": 24943,
+    "packets": 31253,
+    "reported_lost_percent": 79.8073846547642
+  },
+  {
+    "name": "tcp-d50-p0",
+    "protocol": "tcp",
+    "delay_ms_per_link": 50,
+    "loss_pct_per_link": 0,
+    "offered_mbps": null,
+    "mbps": 8.43827821272034,
+    "retransmits": 0
+  },
+  {
+    "name": "tcp-d50-p5",
+    "protocol": "tcp",
+    "delay_ms_per_link": 50,
+    "loss_pct_per_link": 5,
+    "offered_mbps": null,
+    "mbps": 0.2272034489186332,
+    "retransmits": 13
+  },
+  {
+    "name": "tcp-d50-p10",
+    "protocol": "tcp",
+    "delay_ms_per_link": 50,
+    "loss_pct_per_link": 10,
+    "offered_mbps": null,
+    "mbps": 0.10040700355106043,
+    "retransmits": 17
+  },
+  {
+    "name": "tcp-d20-p0",
+    "protocol": "tcp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 0,
+    "offered_mbps": null,
+    "mbps": 7.7476398216545865,
+    "retransmits": 0
+  },
+  {
+    "name": "tcp-d20-p5",
+    "protocol": "tcp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 5,
+    "offered_mbps": null,
+    "mbps": 0.34484946200312266,
+    "retransmits": 24
+  },
+  {
+    "name": "tcp-d20-p10",
+    "protocol": "tcp",
+    "delay_ms_per_link": 20,
+    "loss_pct_per_link": 10,
+    "offered_mbps": null,
+    "mbps": 0.257064016989677,
+    "retransmits": 41
+  }
+]

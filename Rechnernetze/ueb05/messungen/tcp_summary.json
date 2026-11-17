@@ -1,0 +1,70 @@
+{
+  "segments": [
+    {
+      "frame": 14,
+      "seq": 48,
+      "length": 1448,
+      "end": 1496,
+      "ack_frame": 24,
+      "ack": 2944
+    },
+    {
+      "frame": 15,
+      "seq": 1496,
+      "length": 1448,
+      "end": 2944,
+      "ack_frame": 24,
+      "ack": 2944
+    },
+    {
+      "frame": 16,
+      "seq": 2944,
+      "length": 1448,
+      "end": 4392,
+      "ack_frame": 25,
+      "ack": 5840
+    },
+    {
+      "frame": 17,
+      "seq": 4392,
+      "length": 1448,
+      "end": 5840,
+      "ack_frame": 25,
+      "ack": 5840
+    },
+    {
+      "frame": 18,
+      "seq": 5840,
+      "length": 1448,
+      "end": 7288,
+      "ack_frame": 26,
+      "ack": 8736
+    }
+  ],
+  "events": {
+    "handshake": {
+      "tcp.analysis.retransmission": 0,
+      "tcp.analysis.fast_retransmission": 0,
+      "tcp.analysis.duplicate_ack": 0,
+      "tcp.analysis.out_of_order": 0
+    },
+    "tcp-d20-p0": {
+      "tcp.analysis.retransmission": 0,
+      "tcp.analysis.fast_retransmission": 0,
+      "tcp.analysis.duplicate_ack": 0,
+      "tcp.analysis.out_of_order": 0
+    },
+    "tcp-d20-p5": {
+      "tcp.analysis.retransmission": 19,
+      "tcp.analysis.fast_retransmission": 8,
+      "tcp.analysis.duplicate_ack": 50,
+      "tcp.analysis.out_of_order": 6
+    },
+    "tcp-d20-p10": {
+      "tcp.analysis.retransmission": 37,
+      "tcp.analysis.fast_retransmission": 14,
+      "tcp.analysis.duplicate_ack": 53,
+      "tcp.analysis.out_of_order": 9
+    }
+  }
+}

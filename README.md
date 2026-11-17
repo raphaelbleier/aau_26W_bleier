@@ -14,7 +14,7 @@ Meine Lösungen zu den Übungen im Wintersemester 2026/27 an der Universität Kl
 |---|---|---|---|---|
 | Linear Optimization | 311.160 | [LinearOptimization](LinearOptimization) | 7 | Blatt 1 bis 7 gelöst; Blatt 7 mit sieben Bland-Pivots, schwacher Dualität und Beweis eines dualen Optimums; Abgabe und Kreuzeln 23.11.2026, 12:00 |
 | Web-Technologien UE | 621.901 | [WebTechnologienUE](WebTechnologienUE) | 8 | Blätter 1 bis 8 gelöst, Projekt-Präsentation offen |
-| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 8 | Blatt 1 bis 4 und 6 bis 9 gelöst; Blatt 9 Forensik, Server-Gateway 10.10.2.254, Abgabe Horvath 26.01.2027, 08:00, Alkhateeb zeigt 26.01.2026 und ist nicht geraten; Blatt 8 Abgabe 19.01.2027, 08:00; Blatt 5 fehlt, Moodle liefert noch Blatt 02 |
+| Rechnernetze UE | 621.801/621.802 | [Rechnernetze](Rechnernetze) | 9 | Blatt 1 bis 9 gelöst; Blatt 5 mit korrigierter Angabe, Framing, 18 TCP/UDP-Messungen und Wireshark-Auswertung, Abgabe 01.12.2026, 08:00; Blatt 9 Abgabe Horvath 26.01.2027, 08:00, Alkhateeb zeigt 26.01.2026 und ist nicht geraten |
 | Logische Programmierung | 621.315 | [LogischeProgrammierung](LogischeProgrammierung) | 3+1 | Exercise sheet 1, Homework sheet 1 und die Minitest-Vorbereitung gelöst; je Lösungs- und Erklär-PDF; Project 1 (Starlight) als ASP-Encoding gelöst, alle 14 Instanzen gegen die Referenzlösungen geprüft; Abgabe 8.12.2026, Zwischenstand 11.11.2026; Vorführung 21.10., Korrektur 28.10.2026 |
 | Informationssicherheitsmanagement | 622.760 | [Informationssicherheitsmanagement](Informationssicherheitsmanagement) | 1 | Gruppenarbeit 1, Privatklinik Annabichl GmbH, Gehirn-OPs; Folien und Erklärung; Abgabe 03.11.2026, 23:59, noch nicht in Moodle |
 
