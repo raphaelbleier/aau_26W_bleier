@@ -40,12 +40,12 @@ x_7 &= 1 - x_1
 \end{aligned}
 \]
 Use the simplex method to find the optimal solution by applying Bland's rule.}
-\explain{Das Tableau ist ein Dictionary: links stehen die Basisvariablen $x_5,x_6,x_7$, rechts die Nichtbasisvariablen $x_1,\dots,x_4$. Die zweite und dritte Zeile sind im Original beide mit $x_5$ beschriftet; da die vierte $x_7$ heißt, behandle ich die dritte Zeile als $x_6$. Eine Basis darf keine Variable doppelt enthalten.}
+\explain{Das Tableau ist ein Dictionary: links stehen die Basisvariablen $x_5,x_6,x_7$, rechts die Nichtbasisvariablen $x_1,\dots,x_4$. Eine Basis darf keine Variable doppelt enthalten.}
 \explain{Bland's Rule legt zwei Dinge fest, um Zyklen zu vermeiden: Als eintretende Variable nimmt man unter allen Nichtbasisvariablen mit positiven reduzierten Kosten die mit dem kleinsten Index; als austretende unter allen Zeilen mit minimalem Quotienten die mit dem kleinsten Basisindex. Die Startecke $(0,0,0,0,0,0,1)$ ist degeneriert, weil $x_5=x_6=0$ Basisvariablen sind. Deshalb sind die ersten Schritte degenerierte Pivots mit Schrittweite $0$: Die Ecke und $z$ bleiben stehen, nur die Basis wechselt. Genau dafür braucht es Bland's Rule.}
 \explain{Vorzeichenkonvention für den Quotiententest: In der Zeile $x_i=\bar b_i-\sum_j \bar a_{ij}x_j$ steht vor $x_j$ der Koeffizient $-\bar a_{ij}$. Der Quotiententest rechnet mit $\bar a_{ij}$, also mit dem Negativen des hingeschriebenen Koeffizienten. Ein positiver hingeschriebener Koeffizient bedeutet $\bar a_{ij}<0$ und liefert keinen Quotienten.}
 
 \teil{Initial dictionary}
-The source labels both middle rows $x_5$. I interpret the second of these as $x_6$, so the three basic variables are distinct. All coefficients are unchanged.\par
+The three basic variables are $x_5$, $x_6$ and $x_7$. All coefficients are unchanged.\par
 The basis is $B=\{5,6,7\}$, the nonbasis $N=\{1,2,3,4\}$. Setting the nonbasic variables to zero gives the basic feasible solution $x=(0,0,0,0,0,0,1)^T$ with $z=0$. The reduced costs are the coefficients of the objective row:
 \begin{align*}
 \bar c_N &= (1,\,-2,\,0,\,-2) && \why{read off $z = x_1 - 2x_2 - 2x_4$}
