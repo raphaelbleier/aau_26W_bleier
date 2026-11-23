@@ -1,6 +1,6 @@
 # Rechnernetze: Übungsblatt 04
 
-[KI-Kennzeichnung](KI_NUTZUNG.md). Gruppe 1 (Raphael Bleier, Devis, Fabio). Welche der beiden Moodle-Abgaben (Horvath oder Alkhateeb) das ist, habe ich nicht geprüft. Beide nennen Dienstag, 24.11.2026, 08:00. Nichts wurde hochgeladen.
+[KI-Kennzeichnung](KI_NUTZUNG.md). Gruppe 1 (Raphael Bleier, Devis, Fabio). Welche der beiden Moodle-Abgaben (Horvath oder Alkhateeb) das ist, habe ich nicht geprüft. Die aktuellen Fristen für beide Gruppen stehen in der [Blattübersicht](../README.md). Nichts wurde hochgeladen.
 
 Gemessen am 30.10.2026 mit Mininet 2.3.0 und Python 3.13.3. `sudo mn` ist gestartet, hat aber gemeldet, dass kein Standard-OpenFlow-Controller da ist, und ist auf eine OVS-Bridge zurückgefallen. Deshalb fehlt `c0` in der Ausgabe. Die Host-Adressen stimmen trotzdem mit der Abbildung überein. `xterm` ist hier nicht installiert, also liefen dieselben Befehle in den Netzwerk-Namespaces der Hosts. Das ist dieselbe Sicht, die ein xterm auf h1 oder h2 hätte.
 
